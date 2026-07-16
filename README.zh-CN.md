@@ -4,6 +4,16 @@
 
 浮动标题编号插件在思源桌面编辑器的标题旁浮动显示层级编号。编号根据内核返回的完整 BlockDOM 计算，因此即使长文档仅有一部分挂载在编辑器中，编号仍然准确。
 
+## 功能演示
+
+### 编号逻辑
+
+<img width="600" alt="层级标题编号演示" src="https://raw.githubusercontent.com/airium/siyuan-floating-heading-number/main/assets/numbering-logic.gif">
+
+### 在窄视图中自动隐藏
+
+<img width="600" alt="标题编号在窄编辑器中自动隐藏" src="https://raw.githubusercontent.com/airium/siyuan-floating-heading-number/main/assets/narrow-view-auto-hide.gif">
+
 ## 行为
 
 * 以文档中实际存在的最高标题级别作为编号根级别。
@@ -21,6 +31,19 @@
 需要思源 3.7.1 或更高版本。插件支持 `desktop`、`browser-desktop` 和 `desktop-window`，在发布模式中禁用，且不在移动端前端运行。
 
 实现依赖内部的 `/api/block/getBlockDOM` 端点和思源 Protyle DOM 选择器。这些是兼容性依赖，不是新增的公共 API。
+
+## 性能基准
+
+以下分离 DOM 合成基准于 2026-07-16 使用 Node.js 24.15.0 和 happy-dom 20.10.6 记录。每个测试文档每十个块包含一个标题，渲染时挂载前 200 个标题，以模拟思源编辑器仅加载部分 DOM 的情况。
+
+|   块数 | BlockDOM 字节数 | 完整树标题数 |    解析耗时 | 可见区域渲染耗时 | 生成的 CSS 字节数 |
+| -----: | --------------: | -----------: | ----------: | ---------------: | ----------------: |
+| 10,000 |       1,152,956 |        1,000 |   795.71 ms |         15.05 ms |            85,036 |
+| 50,000 |       5,808,956 |        5,000 | 3,898.49 ms |          4.32 ms |            85,036 |
+
+两种规模的基准均保持基于完整文档树的精确编号，从不回退到仅对可见标题编号。单元测试另行验证了同时加载的分屏编辑器会合并为一次请求。
+
+浏览器 DOM 解析性能取决于具体实现，因此这些数字用于回归比较，而不是对思源 Chromium 运行时性能的预测。本次运行时没有可用的思源 3.7.1 内核；可运行 `pnpm benchmark -- --endpoint http://127.0.0.1:6806 --root-id <id>`，为真实文档追加内核响应耗时和响应大小测量。
 
 ## 开发
 
