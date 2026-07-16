@@ -7,3 +7,4 @@
 * Refresh shared document snapshots after heading-affecting transactions.
 * Add responsive gutter rendering without mutating block DOM.
 * Add global enablement settings in English and Simplified Chinese.
+* Remove persisted settings when the plugin is uninstalled.

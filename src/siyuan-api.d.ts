@@ -32,6 +32,7 @@ declare module "siyuan" {
 
         loadData(storageName: string): Promise<unknown>;
         saveData(storageName: string, data: unknown): Promise<unknown>;
+        removeData(storageName: string): Promise<unknown>;
     }
 
     export function getAllEditor(): unknown[];

@@ -130,6 +130,14 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
         this.service.dispose();
     }
 
+    async uninstall(): Promise<void> {
+        try {
+            await this.removeData(SETTINGS_FILE);
+        } catch (error) {
+            console.warn(`[${this.name}] failed to remove ${SETTINGS_FILE}`, error);
+        }
+    }
+
     async onDataChanged(): Promise<void> {
         await this.loadSettings();
         if (this.settingInput) {
