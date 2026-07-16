@@ -56,6 +56,19 @@ pnpm check
 
 `pnpm build` 会创建 `package.zip` 并检查商城包内容。`pnpm benchmark` 会针对生成的 1 万和 5 万块文档记录分离 BlockDOM 解析及可见规则渲染性能；传入 `--endpoint http://127.0.0.1:6806 --root-id <id>` 还可测量实时内核请求。
 
+## 发布准备
+
+`plugin.json` 是版本号的唯一基准。准备稳定版本时：
+
+1. 在最新的 `main` 分支上运行 `pnpm version:set 0.2.0`，参数使用目标 `主版本.次版本.修订版本`。该命令会同时更新 `plugin.json` 和 `package.json`。
+2. 在 `CHANGELOG.md` 中添加形如 `## v0.2.0 - YYYY-MM-DD` 的带日期章节；其中的内容会成为 GitHub Release 说明。
+3. 运行 `pnpm check`，检查生成的 `package.zip`，然后提交清单和更新日志的变更并推送到 `main`。
+4. 在 GitHub 打开 **Actions > Release > Run workflow**，选择 `main`，输入不带 `v` 前缀的 `0.2.0`。
+
+工作流仅接受从 `main` 发起的发布，并会检查输入与两个清单中的版本是否一致、拒绝已存在的标签或 Release、使用锁定的依赖安装、运行完整的检查/构建/打包验证，以及要求存在匹配的更新日志。全部通过后，它会在触发工作流的提交上创建标签和 Release `v0.2.0`，并且仅附加 `package.zip`。请勿手动创建标签，也不要替换已有 Release 中的文件；任何修正都应发布新版本。
+
+首次发布到集市时，应先创建 GitHub Release，再通过拉取请求将 `airium/siyuan-floating-heading-number` 添加到思源 Bazaar 的 `plugins.txt`。仓库通过审核后，Bazaar 会自动发现后续的 GitHub Release。
+
 ## 许可证
 
 AGPL-3.0，详见 [LICENSE](https://github.com/airium/siyuan-floating-heading-number/blob/main/LICENSE)。

@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "benchmark": "tsx scripts/benchmark.ts",
+    "version:set": "node scripts/version.mjs set",
+    "version:check": "node scripts/version.mjs check",
     "dev": "webpack --config webpack.config.js --mode development",
     "build": "run-s clean build:app package:check",
     "build:app": "webpack --config webpack.config.js --mode production",

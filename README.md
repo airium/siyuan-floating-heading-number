@@ -56,6 +56,19 @@ pnpm check
 
 `pnpm build` creates `package.zip` and verifies its marketplace contents. `pnpm benchmark` records detached BlockDOM parse and visible-rule rendering measurements for generated 10k- and 50k-block documents; pass `--endpoint http://127.0.0.1:6806 --root-id <id>` to also measure a live kernel request.
 
+## Release preparation
+
+`plugin.json` is the canonical version source. To prepare a stable release:
+
+1. From an up-to-date `main` branch, run `pnpm version:set 0.2.0` with the intended `MAJOR.MINOR.PATCH` version. This updates both `plugin.json` and `package.json`.
+2. Add a dated `## v0.2.0 - YYYY-MM-DD` section to `CHANGELOG.md`. Its contents become the GitHub release notes.
+3. Run `pnpm check`, review the resulting `package.zip`, then commit and push the manifest and changelog changes to `main`.
+4. On GitHub, open **Actions > Release > Run workflow**, select `main`, and enter `0.2.0` without a `v` prefix.
+
+The workflow accepts releases only from `main`, checks that the input matches both manifests, rejects an existing tag or release, installs from the frozen lockfile, runs the complete check/build/package verification, and requires matching changelog notes. It then creates tag and release `v0.2.0` at the dispatched commit and attaches exactly `package.zip`. Do not create the tag manually or replace an asset on an existing release; publish a new version for any correction.
+
+For the first Marketplace publication, create the GitHub release before adding `airium/siyuan-floating-heading-number` to SiYuan Bazaar's `plugins.txt` in a pull request. After the repository is accepted, Bazaar discovers later GitHub releases automatically.
+
 ## License
 
 AGPL-3.0. See [LICENSE](https://github.com/airium/siyuan-floating-heading-number/blob/main/LICENSE).

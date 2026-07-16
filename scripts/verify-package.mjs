@@ -32,7 +32,8 @@ if (
     plugin.name !== "siyuan-floating-heading-number" ||
     plugin.name !== packageMetadata.name ||
     plugin.version !== packageMetadata.version ||
-    plugin.minAppVersion !== "3.7.1" ||
+    !isStableVersion(plugin.version) ||
+    !isAtLeastVersion(plugin.minAppVersion, "3.7.1") ||
     plugin.url !== "https://github.com/airium/siyuan-floating-heading-number"
 ) {
     throw new Error("plugin.json identity or compatibility metadata is invalid");
@@ -55,4 +56,22 @@ async function assertPngDimensions(archive, name, width, height) {
     if (view.getUint32(16) !== width || view.getUint32(20) !== height) {
         throw new Error(`${name} must be ${width}x${height}`);
     }
+}
+
+function isStableVersion(value) {
+    return typeof value === "string" && /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(value);
+}
+
+function isAtLeastVersion(value, minimum) {
+    if (!isStableVersion(value)) {
+        return false;
+    }
+    const parts = value.split(".").map(Number);
+    const minimumParts = minimum.split(".").map(Number);
+    for (let index = 0; index < parts.length; index += 1) {
+        if (parts[index] !== minimumParts[index]) {
+            return parts[index] > minimumParts[index];
+        }
+    }
+    return true;
 }
