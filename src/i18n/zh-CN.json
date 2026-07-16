@@ -1,0 +1,5 @@
+{
+  "enabledTitle": "浮动标题编号",
+  "enabledDescription": "在编辑器侧栏浮动显示基于完整文档计算的精确标题编号。",
+  "loadError": "无法计算浮动标题编号"
+}

@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Heading Number Preview</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #e9eceb;
+            color: #202523;
+            font-family: "Ubuntu Sans", "Noto Sans", sans-serif;
+            font-size: 14px;
+        }
+
+        .app {
+            width: 1024px;
+            height: 768px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .topbar {
+            height: 46px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #d8dcda;
+            background: #f7f8f8;
+            color: #58615e;
+        }
+
+        .brand {
+            width: 226px;
+            padding-left: 18px;
+            color: #1d2925;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .crumb {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .crumb strong {
+            color: #252b29;
+            font-weight: 600;
+        }
+
+        .workspace {
+            height: 722px;
+            display: grid;
+            grid-template-columns: 226px 1fr;
+        }
+
+        .sidebar {
+            padding: 14px 10px;
+            border-right: 1px solid #dde1df;
+            background: #f5f6f6;
+        }
+
+        .sidebar-label {
+            padding: 7px 10px 9px;
+            color: #7b8380;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .tree-item {
+            height: 34px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0 10px;
+            border-radius: 5px;
+            color: #505855;
+        }
+
+        .tree-item.active {
+            background: #dfeae5;
+            color: #184d39;
+            font-weight: 600;
+        }
+
+        .doc-icon {
+            width: 16px;
+            color: #6b7571;
+            text-align: center;
+        }
+
+        .editor-shell {
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .document-header {
+            width: 680px;
+            margin: 0 auto;
+            padding: 34px 0 15px 104px;
+            border-bottom: 1px solid #eceeed;
+        }
+
+        .document-title {
+            margin: 0;
+            color: #17201d;
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+
+        .document-meta {
+            margin-top: 8px;
+            color: #8a918e;
+        }
+
+        .protyle {
+            position: relative;
+            width: 680px;
+            height: 600px;
+            margin: 0 auto;
+        }
+
+        .protyle-wysiwyg {
+            width: 100%;
+            height: 100%;
+            padding: 24px 22px 64px 104px;
+            overflow: hidden;
+            cursor: text;
+            font-size: 16px;
+        }
+
+        [data-node-id] {
+            position: relative;
+        }
+
+        [data-type="NodeHeading"] {
+            margin: 0;
+            color: #1c2522;
+            font-weight: 700;
+        }
+
+        [data-subtype="h2"] {
+            padding: 14px 0 8px;
+            font-size: 24px;
+            line-height: 1.35;
+        }
+
+        [data-subtype="h3"] {
+            padding: 12px 0 6px;
+            font-size: 19px;
+            line-height: 1.45;
+        }
+
+        [data-subtype="h4"] {
+            padding: 9px 0 4px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        [data-type="NodeParagraph"] {
+            max-width: 548px;
+            padding: 2px 0 12px;
+            color: #535b58;
+            line-height: 1.65;
+        }
+
+        .fold-marker {
+            position: absolute;
+            top: 50%;
+            left: -17px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 7px solid #7d8582;
+            transform: translateY(-50%);
+        }
+
+        .selection {
+            display: inline;
+            border-radius: 2px;
+            background: #d7e9f5;
+            color: #263943;
+        }
+
+        [data-siyuan-floating-heading-number-plugin] .protyle-wysiwyg:not(.protyle-wysiwyg--hiderange):not(.protyle-wysiwyg--selecting) [data-node-id][data-type="NodeHeading"]:not(.protyle-wysiwyg--select):not(.protyle-wysiwyg--hl):not([select-start]):not([select-end]):not([class*="dragover"])::after {
+            position: absolute;
+            top: calc(50% - 0.8125em);
+            right: calc(100% + 8px);
+            width: var(--siyuan-floating-heading-number-width, 34px);
+            height: 1.625em;
+            overflow: hidden;
+            color: #74807b;
+            font-size: var(--siyuan-floating-heading-number-font-size, 16px);
+            font-weight: 600;
+            line-height: 1.625;
+            pointer-events: none;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        [data-siyuan-floating-heading-number-plugin] .protyle-wysiwyg [data-node-id][data-type="NodeHeading"][fold="1"]::after {
+            right: calc(100% + 16px + 6px);
+        }
+
+        [data-node-id="architecture"]::after {
+            --siyuan-floating-heading-number-width: 10px;
+            --siyuan-floating-heading-number-font-size: 16px;
+            content: "1";
+        }
+
+        [data-node-id="request-flow"]::after {
+            --siyuan-floating-heading-number-width: 26px;
+            --siyuan-floating-heading-number-font-size: 16px;
+            content: "1.1";
+        }
+
+        [data-node-id="validation"]::after {
+            --siyuan-floating-heading-number-width: 41px;
+            --siyuan-floating-heading-number-font-size: 16px;
+            content: "1.1.1";
+        }
+
+        [data-node-id="errors"]::after {
+            --siyuan-floating-heading-number-width: 26px;
+            --siyuan-floating-heading-number-font-size: 16px;
+            content: "1.2";
+        }
+
+        [data-node-id="rollout"]::after {
+            --siyuan-floating-heading-number-width: 10px;
+            --siyuan-floating-heading-number-font-size: 16px;
+            content: "2";
+        }
+
+        .status {
+            position: absolute;
+            right: 19px;
+            bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: #66706c;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #26865f;
+        }
+    </style>
+</head>
+<body>
+    <main class="app">
+        <header class="topbar">
+            <div class="brand">SiYuan</div>
+            <div class="crumb"><span>Engineering</span><span>/</span><strong>API Design Notes</strong></div>
+        </header>
+        <div class="workspace">
+            <aside class="sidebar">
+                <div class="sidebar-label">Notebook</div>
+                <div class="tree-item"><span class="doc-icon">+</span><span>Inbox</span></div>
+                <div class="tree-item"><span class="doc-icon">#</span><span>Architecture</span></div>
+                <div class="tree-item active"><span class="doc-icon">#</span><span>API Design Notes</span></div>
+                <div class="tree-item"><span class="doc-icon">#</span><span>Release checklist</span></div>
+                <div class="tree-item"><span class="doc-icon">#</span><span>Decision log</span></div>
+            </aside>
+            <section class="editor-shell">
+                <div class="document-header">
+                    <h1 class="document-title">API Design Notes</h1>
+                    <div class="document-meta">Updated today</div>
+                </div>
+                <div class="protyle" data-siyuan-floating-heading-number-plugin="preview-controller">
+                    <div class="protyle-wysiwyg">
+                        <h2 data-node-id="architecture" data-type="NodeHeading" data-subtype="h2">Architecture</h2>
+                        <div data-node-id="p1" data-type="NodeParagraph">The desktop client and browser frontend share the same request contract and validation path.</div>
+                        <h3 data-node-id="request-flow" data-type="NodeHeading" data-subtype="h3" fold="1"><span class="fold-marker"></span>Request flow</h3>
+                        <div data-node-id="p2" data-type="NodeParagraph">Resolve the document root, load the complete tree, then render only the blocks mounted in the editor.</div>
+                        <h4 data-node-id="validation" data-type="NodeHeading" data-subtype="h4">Response validation</h4>
+                        <div data-node-id="p3" data-type="NodeParagraph">Reject stale generations and malformed payloads before applying presentation rules.</div>
+                        <h3 data-node-id="errors" data-type="NodeHeading" data-subtype="h3">Error handling</h3>
+                        <div data-node-id="p4" data-type="NodeParagraph">Keep the last valid numbering map while a replacement request is pending.</div>
+                        <h2 data-node-id="rollout" data-type="NodeHeading" data-subtype="h2">Rollout</h2>
+                        <div data-node-id="p5" data-type="NodeParagraph"><span class="selection">Verify long documents</span>, split editors, and rapid document switching before release.</div>
+                    </div>
+                </div>
+                <div class="status"><span class="status-dot"></span><span>Saved</span></div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

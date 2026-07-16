@@ -1,0 +1,66 @@
+{
+  "name": "siyuan-floating-heading-number",
+  "version": "0.1.0",
+  "description": "Exact full-document heading numbers floating beside headings in the SiYuan editor",
+  "main": "index.js",
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "format": "dprint fmt",
+    "format:check": "dprint check",
+    "lint": "eslint . --cache",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "dev": "webpack --config webpack.config.js --mode development",
+    "build": "run-s clean build:app package:check",
+    "build:app": "webpack --config webpack.config.js --mode production",
+    "package:check": "node scripts/verify-package.mjs",
+    "check": "run-s format:check lint typecheck test build"
+  },
+  "keywords": [
+    "siyuan",
+    "floating",
+    "heading",
+    "numbering",
+    "outline"
+  ],
+  "author": "airium",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airium/siyuan-floating-heading-number.git"
+  },
+  "homepage": "https://github.com/airium/siyuan-floating-heading-number",
+  "bugs": "https://github.com/airium/siyuan-floating-heading-number/issues",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.60.1",
+    "@typescript-eslint/parser": "^8.60.1",
+    "copy-webpack-plugin": "^14.0.0",
+    "css-loader": "^7.1.4",
+    "dprint": "latest",
+    "esbuild-loader": "^4.4.3",
+    "eslint": "^10.4.1",
+    "globals": "^17.6.0",
+    "happy-dom": "^20.8.3",
+    "jszip": "^3.10.1",
+    "mini-css-extract-plugin": "^2.10.2",
+    "npm-run-all": "^4.1.5",
+    "sass": "^1.100.0",
+    "sass-loader": "^17.0.0",
+    "siyuan": "1.2.2",
+    "tslib": "^2.8.1",
+    "typescript": "^6.0.3",
+    "tsx": "^4.21.0",
+    "vitest": "^4.0.18",
+    "webpack": "^5.107.2",
+    "webpack-cli": "^7.0.3",
+    "zip-webpack-plugin": "^4.0.3"
+  }
+}

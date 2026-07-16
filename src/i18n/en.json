@@ -1,0 +1,5 @@
+{
+  "enabledTitle": "Floating heading numbers",
+  "enabledDescription": "Display exact full-document heading numbers floating in editor gutters.",
+  "loadError": "Unable to calculate floating heading numbers"
+}

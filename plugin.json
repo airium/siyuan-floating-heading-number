@@ -1,0 +1,44 @@
+{
+  "name": "siyuan-floating-heading-number",
+  "author": "airium",
+  "url": "https://github.com/airium/siyuan-floating-heading-number",
+  "version": "0.1.0",
+  "minAppVersion": "3.7.1",
+  "backends": [
+    "all"
+  ],
+  "frontends": [
+    "desktop",
+    "browser-desktop",
+    "desktop-window"
+  ],
+  "disabledInPublish": true,
+  "displayName": {
+    "default": "Floating Heading Number",
+    "zh-CN": "浮动标题编号"
+  },
+  "description": {
+    "default": "Display exact hierarchical heading numbers floating in the editor gutter",
+    "zh-CN": "在编辑器侧栏浮动显示精确的层级标题编号"
+  },
+  "readme": {
+    "default": "README.md",
+    "zh-CN": "README.zh-CN.md"
+  },
+  "funding": {
+    "openCollective": "",
+    "patreon": "",
+    "github": "",
+    "custom": []
+  },
+  "keywords": [
+    "floating",
+    "heading",
+    "numbering",
+    "outline",
+    "浮动",
+    "标题",
+    "编号",
+    "大纲"
+  ]
+}
