@@ -2,7 +2,7 @@
   "name": "siyuan-floating-heading-number",
   "author": "airium",
   "url": "https://github.com/airium/siyuan-floating-heading-number",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "minAppVersion": "3.7.1",
   "backends": [
     "all"

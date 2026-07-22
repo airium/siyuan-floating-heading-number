@@ -2,11 +2,15 @@
 
 [简体中文](https://github.com/airium/siyuan-floating-heading-number/blob/main/README.zh-CN.md)
 
-Floating Heading Number displays hierarchical numbers floating beside headings in SiYuan's desktop editor. Numbers are computed from the complete BlockDOM returned by the kernel, so they stay exact when a long document is only partially mounted in the editor.
+Floating Heading Number adds accurate, configurable hierarchical numbering to headings in SiYuan's desktop editor.
+
+* **Exact across the whole document.** Numbering stays correct even when a long document is only partially rendered.
+* **Flexible presentation.** Choose five placements and customize the prefix and suffix; by default, numbers appear as `§1` inside the left edge.
+* **Non-invasive.** The plugin leaves heading blocks, transactions, and undo data untouched while adapting to editor interactions.
 
 ## Demonstration
 
-### Numbering logic
+### Numbering logic (outside-left placement)
 
 <img width="600" alt="Hierarchical heading numbering demonstration" src="https://raw.githubusercontent.com/airium/siyuan-floating-heading-number/main/assets/numbering-logic.gif">
 
@@ -16,6 +20,9 @@ Floating Heading Number displays hierarchical numbers floating beside headings i
 
 ## Behavior
 
+Floating heading numbering is enabled by default. Placement, prefix, suffix, and the minimum outside-gutter width are configured globally in the plugin settings. The defaults are inside left, a `§` prefix, no suffix, and a 48 px minimum gutter width for outside placements.
+
+* Numbers are computed from the complete BlockDOM returned by the kernel, so they stay exact when a long document is only partially mounted in the editor.
 * Uses the highest heading level present in the document as the numbering root.
 * Preserves skipped levels with zero placeholders, such as `1.0.1`.
 * Excludes headings nested anywhere inside lists, blockquotes, callouts, and query embeds.
@@ -26,8 +33,6 @@ Floating Heading Number displays hierarchical numbers floating beside headings i
 * Keeps folded-heading controls available, hides outside numbers during heading hover or gutter activity, and hides all numbers during selection, highlight, range, and drag interactions.
 * Does not modify heading block attributes, classes, styles, transactions, or undo data.
 
-Floating heading numbering is enabled by default. Placement, prefix, suffix, and the minimum outside-gutter width are configured globally in the plugin settings. The defaults are outside left, a `§` prefix, no suffix, and a 48 px minimum gutter.
-
 ## Compatibility
 
 SiYuan 3.7.1 or later is required. The plugin supports `desktop`, `browser-desktop`, and `desktop-window`. It is disabled in publishing mode and does not run on mobile frontends.
@@ -36,12 +41,12 @@ The implementation relies on the internal `/api/block/getBlockDOM` endpoint and 
 
 ## Benchmark
 
-Synthetic detached-DOM benchmark recorded on 2026-07-16 with Node.js 24.15.0 and happy-dom 20.10.6. Each fixture contains one heading for every ten blocks, and rendering mounts the first 200 headings to model SiYuan's partial editor DOM.
+Synthetic detached-DOM benchmark recorded on 2026-07-22 with Node.js 24.15.0 and happy-dom 20.10.6. Each fixture contains one heading for every ten blocks, and rendering mounts the first 200 headings to model SiYuan's partial editor DOM.
 
 | Blocks | BlockDOM bytes | Full-tree headings |  Parse time | Visible render time | Generated CSS bytes |
 | -----: | -------------: | -----------------: | ----------: | ------------------: | ------------------: |
-| 10,000 |      1,152,956 |              1,000 |   951.29 ms |            20.58 ms |              67,284 |
-| 50,000 |      5,808,956 |              5,000 | 3,985.96 ms |             6.59 ms |              67,284 |
+| 10,000 |      1,152,956 |              1,000 |   973.79 ms |            26.59 ms |             109,284 |
+| 50,000 |      5,808,956 |              5,000 | 3,916.16 ms |             7.52 ms |             109,284 |
 
 The benchmark preserves exact full-tree numbering at both sizes and never uses a visible-only fallback. Unit tests separately verify that simultaneous split-editor loads coalesce into one request.
 

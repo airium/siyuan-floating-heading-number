@@ -22,7 +22,7 @@ describe("plugin settings", () => {
     it("migrates legacy enabled-only settings", () => {
         expect(parsePluginSettings({enabled: false})).toEqual({
             enabled: false,
-            placement: "outside-left",
+            placement: "inside-left",
             minimumGutterWidth: 48,
             prefix: "§",
             suffix: "",

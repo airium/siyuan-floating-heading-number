@@ -34,7 +34,7 @@ describe("EditorController rendering", () => {
         expect(style?.textContent).toContain('content:"§1"');
         expect(style?.textContent).toContain('content:"§1.1"');
         expect(style?.textContent).toContain("--siyuan-floating-heading-number-width:");
-        expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("outside-left");
+        expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("inside-left");
         expect(Array.from(wysiwyg.children).map((element) => element.outerHTML)).toEqual(headings);
     });
 
@@ -111,7 +111,10 @@ describe("EditorController rendering", () => {
 
     it("recalculates outside visibility after a padding transition", async () => {
         const {protyle, host, wysiwyg} = createProtyle({paddingLeft: 47});
-        const controller = new EditorController(protyle);
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "outside-left",
+        });
         controller.switchRoot("root");
         controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
         expect(host.dataset.siyuanFloatingHeadingNumberPlugin).toBeUndefined();
@@ -128,14 +131,14 @@ describe("EditorController rendering", () => {
 
     it("suppresses narrow, history, and backlink Protyles", () => {
         for (
-            const options of [
-                {paddingLeft: 47},
-                {history: true},
-                {backlink: true},
-            ]
+            const [options, renderPreferences] of [
+                [{paddingLeft: 47}, {...DEFAULT_RENDER_PREFERENCES, placement: "outside-left" as const}],
+                [{history: true}, DEFAULT_RENDER_PREFERENCES],
+                [{backlink: true}, DEFAULT_RENDER_PREFERENCES],
+            ] as const
         ) {
             const {protyle, host} = createProtyle(options);
-            const controller = new EditorController(protyle);
+            const controller = new EditorController(protyle, true, renderPreferences);
             controller.switchRoot("root");
             controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
 
@@ -155,7 +158,10 @@ describe("EditorController rendering", () => {
                 heading("outside-list", 2),
         });
         const originalListHeading = wysiwyg.querySelector('[data-node-id="in-list"]')?.outerHTML;
-        const controller = new EditorController(protyle);
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "outside-left",
+        });
         controller.switchRoot("root");
         controller.applySnapshot(snapshot("root", {"in-list": "1", "outside-list": "2"}));
 
@@ -176,7 +182,10 @@ describe("EditorController rendering", () => {
         Object.defineProperty(wysiwyg.firstElementChild, "getBoundingClientRect", {
             value: () => ({left: 24, width: 400, top: 0, right: 424, bottom: 30, height: 30, x: 24, y: 0, toJSON() {}}),
         });
-        const controller = new EditorController(protyle);
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "outside-left",
+        });
         controller.switchRoot("root");
         controller.applySnapshot(snapshot("root", {folded: "123.456.789"}));
 
@@ -288,7 +297,10 @@ describe("EditorController rendering", () => {
     it("tracks gutter activity on host state and cleans up completely", async () => {
         const {protyle, host, wysiwyg, gutter} = createProtyle({headings: heading("active", 1)});
         const originalHeading = wysiwyg.firstElementChild?.outerHTML;
-        const controller = new EditorController(protyle);
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "outside-left",
+        });
         controller.switchRoot("root");
         controller.applySnapshot(snapshot("root", {active: "1"}));
 

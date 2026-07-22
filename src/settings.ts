@@ -11,7 +11,7 @@ export const MINIMUM_GUTTER_WIDTH_MAX = 512;
 export const DEFAULT_HEADING_NUMBER_PREFIX = "§";
 export const DEFAULT_HEADING_NUMBER_SUFFIX = "";
 export const DEFAULT_RENDER_PREFERENCES: HeadingNumberRenderPreferences = {
-    placement: "outside-left",
+    placement: "inside-left",
     minimumGutterWidth: DEFAULT_MINIMUM_GUTTER_WIDTH,
     prefix: DEFAULT_HEADING_NUMBER_PREFIX,
     suffix: DEFAULT_HEADING_NUMBER_SUFFIX,

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.1 - 2026-07-22
+
+* Use inside-left as the default heading-number placement.
+* Add a concise feature overview above the README demonstrations.
+
 ## v0.3.0 - 2026-07-22
 
 * Add configurable text before and after heading numbers.
