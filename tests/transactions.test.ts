@@ -19,6 +19,9 @@ const source = documentDom(
     heading("heading", 2) +
         '<div data-node-id="container" data-type="NodeSuperBlock">' + heading("nested-heading", 3) + "</div>" +
         '<div data-node-id="quote" data-type="NodeBlockquote">' + heading("excluded-heading", 3) + "</div>" +
+        '<div data-node-id="list" data-type="NodeList"><div data-node-id="list-item" data-type="NodeListItem">' +
+        heading("excluded-list-heading", 3) +
+        "</div></div>" +
         paragraph("paragraph"),
 );
 const snapshot = parseHeadingSnapshot("root", source);
@@ -33,7 +36,10 @@ describe("operationMayChangeHeadingNumbers", () => {
     it.each(["delete", "move", "append"])("refreshes %s only for cached headings or ancestors", (action) => {
         expect(operationMayChangeHeadingNumbers({action, id: "heading"}, snapshot)).toBe(true);
         expect(operationMayChangeHeadingNumbers({action, id: "excluded-heading"}, snapshot)).toBe(true);
+        expect(operationMayChangeHeadingNumbers({action, id: "excluded-list-heading"}, snapshot)).toBe(true);
         expect(operationMayChangeHeadingNumbers({action, id: "container"}, snapshot)).toBe(true);
+        expect(operationMayChangeHeadingNumbers({action, id: "list"}, snapshot)).toBe(true);
+        expect(operationMayChangeHeadingNumbers({action, id: "list-item"}, snapshot)).toBe(true);
         expect(operationMayChangeHeadingNumbers({action, id: "paragraph"}, snapshot)).toBe(false);
         expect(operationMayChangeHeadingNumbers({action}, snapshot)).toBe(true);
     });

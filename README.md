@@ -18,7 +18,7 @@ Floating Heading Number displays hierarchical numbers floating beside headings i
 
 * Uses the highest heading level present in the document as the numbering root.
 * Preserves skipped levels with zero placeholders, such as `1.0.1`.
-* Excludes headings nested anywhere inside blockquotes, callouts, and query embeds.
+* Excludes headings nested anywhere inside lists, blockquotes, callouts, and query embeds.
 * Shares one full-document snapshot across split editors and refreshes it after heading-affecting transactions.
 * Shows numbers only when the editor has at least 48 px of left padding.
 * Keeps folded-heading controls available and hides numbers during gutter, selection, highlight, range, and drag interactions.

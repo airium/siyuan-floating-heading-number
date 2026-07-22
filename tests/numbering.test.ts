@@ -85,6 +85,8 @@ describe("parseHeadingSnapshot", () => {
         "NodeBlockquote",
         "NodeCallout",
         "NodeBlockQueryEmbed",
+        "NodeList",
+        "NodeListItem",
     ])("excludes direct and nested headings under %s", (containerType) => {
         const dom = documentDom(
             `<div data-node-id="container" data-type="${containerType}">` +
@@ -98,6 +100,51 @@ describe("parseHeadingSnapshot", () => {
         expect(mapObject(result.numberById)).toEqual({included: "1"});
         expect(result.allHeadingIds).toEqual(new Set(["excluded-direct", "excluded-nested", "included"]));
         expect(result.headingAncestorIds).toEqual(new Set(["root", "container", "nested"]));
+    });
+
+    it.each([
+        ["ordered", "o"],
+        ["unordered", "u"],
+        ["task", "t"],
+    ])("excludes headings in %s lists without affecting roots or counters", (_name, subtype) => {
+        const result = parseHeadingSnapshot(
+            "root",
+            documentDom(
+                heading("included-root", 3) +
+                    `<div data-node-id="list" data-type="NodeList" data-subtype="${subtype}">` +
+                    '<div data-node-id="item" data-type="NodeListItem">' +
+                    heading("excluded-root", 1) +
+                    `<div data-node-id="nested" data-type="NodeSuperBlock">${heading("excluded-deep", 6)}</div>` +
+                    "</div>" +
+                    "</div>" +
+                    heading("included-child", 4),
+            ),
+        );
+
+        expect(result.minimumLevel).toBe(3);
+        expect(mapObject(result.numberById)).toEqual({
+            "included-root": "1",
+            "included-child": "1.1",
+        });
+        expect(result.allHeadingIds).toEqual(
+            new Set(["included-root", "excluded-root", "excluded-deep", "included-child"]),
+        );
+        expect(result.headingAncestorIds).toEqual(new Set(["root", "list", "item", "nested"]));
+    });
+
+    it("returns an empty numbering map when every heading is inside a list", () => {
+        const result = parseHeadingSnapshot(
+            "root",
+            documentDom(
+                '<div data-node-id="list" data-type="NodeList">' +
+                    `<div data-node-id="item" data-type="NodeListItem">${heading("excluded", 2)}</div>` +
+                    "</div>",
+            ),
+        );
+
+        expect(result.minimumLevel).toBeNull();
+        expect(result.numberById.size).toBe(0);
+        expect(result.allHeadingIds).toEqual(new Set(["excluded"]));
     });
 
     it("excludes descendants when excluded containers are nested in ordinary containers", () => {

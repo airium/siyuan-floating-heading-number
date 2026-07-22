@@ -55,6 +55,26 @@ describe("EditorController rendering", () => {
         }
     });
 
+    it("suppresses headings in live list DOM even when a cached snapshot still numbers them", () => {
+        const listHeading = heading("in-list", 2);
+        const {protyle, host, wysiwyg} = createProtyle({
+            headings: '<div data-node-id="list" data-type="NodeList">' +
+                `<div data-node-id="item" data-type="NodeListItem">${listHeading}</div>` +
+                "</div>" +
+                heading("outside-list", 2),
+        });
+        const originalListHeading = wysiwyg.querySelector('[data-node-id="in-list"]')?.outerHTML;
+        const controller = new EditorController(protyle);
+        controller.switchRoot("root");
+        controller.applySnapshot(snapshot("root", {"in-list": "1", "outside-list": "2"}));
+
+        const css = host.querySelector("style")?.textContent ?? "";
+        expect(css).not.toContain('data-node-id="in-list"');
+        expect(css).toContain('data-node-id="outside-list"');
+        expect(css).toContain('content:"2"');
+        expect(wysiwyg.querySelector('[data-node-id="in-list"]')?.outerHTML).toBe(originalListHeading);
+    });
+
     it("reserves folded-arrow space and proportionally shrinks long numbers", () => {
         const {protyle, host, wysiwyg} = createProtyle({
             headings: heading("folded", 1, "Folded", 'fold="1"'),

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.1 - 2026-07-22
+
+* Exclude headings nested in lists from numbering and rendering.
+
 ## v0.1.0 - 2026-07-16
 
 * Add exact full-document hierarchical heading numbers floating beside headings in desktop editors.

@@ -1,8 +1,13 @@
 import type {HeadingSnapshot} from "./types";
 
 const HEADING_SELECTOR = '[data-node-id][data-type="NodeHeading"]';
-const EXCLUDED_CONTAINER_SELECTOR =
-    '[data-type="NodeBlockquote"], [data-type="NodeCallout"], [data-type="NodeBlockQueryEmbed"]';
+export const EXCLUDED_HEADING_CONTAINER_SELECTOR = [
+    '[data-type="NodeBlockquote"]',
+    '[data-type="NodeCallout"]',
+    '[data-type="NodeBlockQueryEmbed"]',
+    '[data-type="NodeList"]',
+    '[data-type="NodeListItem"]',
+].join(", ");
 
 interface ParsedHeading {
     id: string;
@@ -43,7 +48,7 @@ export function parseHeadingSnapshot(rootId: string, dom: string, ownerDocument:
         }
         levelById.set(id, level);
 
-        if (!heading.closest(EXCLUDED_CONTAINER_SELECTOR)) {
+        if (!heading.closest(EXCLUDED_HEADING_CONTAINER_SELECTOR)) {
             included.push({id, level});
         }
     });

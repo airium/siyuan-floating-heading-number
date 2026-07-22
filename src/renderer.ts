@@ -1,3 +1,4 @@
+import {EXCLUDED_HEADING_CONTAINER_SELECTOR} from "./numbering";
 import type {
     HeadingSnapshot,
     MinimalProtyle,
@@ -56,12 +57,16 @@ export function renderHeadingNumbers(options: RenderOptions): void {
 
     const hostSelector = `[data-siyuan-floating-heading-number-plugin="${escapeCssString(controllerId)}"]`;
     const rules: string[] = [];
+    const renderedHeadingIds = new Set<string>();
     const wysiwygRect = wysiwyg.getBoundingClientRect();
     const computedStyle = window.getComputedStyle(wysiwyg);
     const baseFontSize = Number.parseFloat(computedStyle.fontSize) || 16;
     const fontFamily = computedStyle.fontFamily || "sans-serif";
 
     wysiwyg.querySelectorAll<HTMLElement>(HEADING_SELECTOR).forEach((heading) => {
+        if (heading.closest(EXCLUDED_HEADING_CONTAINER_SELECTOR)) {
+            return;
+        }
         const id = heading.getAttribute("data-node-id");
         const number = id ? snapshot.numberById.get(id) : undefined;
         if (!id || !number) {
@@ -79,9 +84,10 @@ export function renderHeadingNumbers(options: RenderOptions): void {
                 `--siyuan-floating-heading-number-font-size:${sizing.fontSize}px;` +
                 `--siyuan-floating-heading-number-width:${sizing.width}px;}`,
         );
+        renderedHeadingIds.add(id);
     });
 
-    if (gutterHeadingId && snapshot.numberById.has(gutterHeadingId)) {
+    if (gutterHeadingId && renderedHeadingIds.has(gutterHeadingId)) {
         rules.push(
             `${hostSelector}[data-siyuan-floating-heading-number-gutter-id="${escapeCssString(gutterHeadingId)}"] ` +
                 `[data-node-id="${escapeCssString(gutterHeadingId)}"][data-type="NodeHeading"]::after{opacity:0;}`,
