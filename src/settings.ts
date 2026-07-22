@@ -8,9 +8,13 @@ import {
 export const DEFAULT_MINIMUM_GUTTER_WIDTH = 48;
 export const MINIMUM_GUTTER_WIDTH_MIN = 0;
 export const MINIMUM_GUTTER_WIDTH_MAX = 512;
+export const DEFAULT_HEADING_NUMBER_PREFIX = "§";
+export const DEFAULT_HEADING_NUMBER_SUFFIX = "";
 export const DEFAULT_RENDER_PREFERENCES: HeadingNumberRenderPreferences = {
     placement: "outside-left",
     minimumGutterWidth: DEFAULT_MINIMUM_GUTTER_WIDTH,
+    prefix: DEFAULT_HEADING_NUMBER_PREFIX,
+    suffix: DEFAULT_HEADING_NUMBER_SUFFIX,
 };
 export const DEFAULT_PLUGIN_SETTINGS: PluginSettings = {
     enabled: true,
@@ -45,6 +49,8 @@ export function parsePluginSettings(value: unknown): PluginSettings {
         enabled: typeof value.enabled === "boolean" ? value.enabled : DEFAULT_PLUGIN_SETTINGS.enabled,
         placement: isHeadingNumberPlacement(value.placement) ? value.placement : DEFAULT_PLUGIN_SETTINGS.placement,
         minimumGutterWidth: normalizeMinimumGutterWidth(value.minimumGutterWidth),
+        prefix: typeof value.prefix === "string" ? value.prefix : DEFAULT_PLUGIN_SETTINGS.prefix,
+        suffix: typeof value.suffix === "string" ? value.suffix : DEFAULT_PLUGIN_SETTINGS.suffix,
     };
 }
 
@@ -52,6 +58,8 @@ export function renderPreferences(settings: PluginSettings): HeadingNumberRender
     return {
         placement: settings.placement,
         minimumGutterWidth: settings.minimumGutterWidth,
+        prefix: settings.prefix,
+        suffix: settings.suffix,
     };
 }
 

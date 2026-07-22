@@ -8,6 +8,10 @@
   "placementInsideLeft": "Inside left",
   "placementInsideRight": "Inside right",
   "placementAfterText": "After heading text",
+  "prefixTitle": "Number prefix",
+  "prefixDescription": "Text displayed immediately before each heading number. Spaces are preserved.",
+  "suffixTitle": "Number suffix",
+  "suffixDescription": "Text displayed immediately after each heading number. Spaces are preserved.",
   "minimumGutterWidthTitle": "Minimum gutter width",
   "minimumGutterWidthDescription": "Hide outside placements when the corresponding gutter is narrower than this value in pixels.",
   "loadError": "Unable to calculate floating heading numbers"

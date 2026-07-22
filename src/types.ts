@@ -11,12 +11,16 @@ export type HeadingNumberPlacement = typeof HEADING_NUMBER_PLACEMENTS[number];
 export interface HeadingNumberRenderPreferences {
     placement: HeadingNumberPlacement;
     minimumGutterWidth: number;
+    prefix: string;
+    suffix: string;
 }
 
 export interface PluginSettings {
     enabled: boolean;
     placement: HeadingNumberPlacement;
     minimumGutterWidth: number;
+    prefix: string;
+    suffix: string;
 }
 
 export interface BlockDOMResponse {

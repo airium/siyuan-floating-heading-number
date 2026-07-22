@@ -101,7 +101,9 @@ export class EditorController {
     setRenderPreferences(renderPreferences: HeadingNumberRenderPreferences): void {
         if (
             this.renderPreferencesValue.placement === renderPreferences.placement &&
-            this.renderPreferencesValue.minimumGutterWidth === renderPreferences.minimumGutterWidth
+            this.renderPreferencesValue.minimumGutterWidth === renderPreferences.minimumGutterWidth &&
+            this.renderPreferencesValue.prefix === renderPreferences.prefix &&
+            this.renderPreferencesValue.suffix === renderPreferences.suffix
         ) {
             return;
         }

@@ -6,6 +6,7 @@ import {
 } from "vitest";
 import {EditorController} from "../src/controller";
 import {escapeCssString} from "../src/renderer";
+import {DEFAULT_RENDER_PREFERENCES} from "../src/settings";
 import type {HeadingNumberPlacement} from "../src/types";
 import {
     createProtyle,
@@ -30,8 +31,8 @@ describe("EditorController rendering", () => {
         const style = host.querySelector<HTMLStyleElement>("style[data-siyuan-floating-heading-number-style]");
         expect(style).not.toBeNull();
         expect(wysiwyg.contains(style)).toBe(false);
-        expect(style?.textContent).toContain('content:"1"');
-        expect(style?.textContent).toContain('content:"1.1"');
+        expect(style?.textContent).toContain('content:"§1"');
+        expect(style?.textContent).toContain('content:"§1.1"');
         expect(style?.textContent).toContain("--siyuan-floating-heading-number-width:");
         expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("outside-left");
         expect(Array.from(wysiwyg.children).map((element) => element.outerHTML)).toEqual(headings);
@@ -46,13 +47,13 @@ describe("EditorController rendering", () => {
     ])("renders %s without changing heading HTML", (placement) => {
         const {protyle, host, wysiwyg} = createProtyle({headings: heading("placed", 2, "Placed heading")});
         const originalHeading = wysiwyg.firstElementChild?.outerHTML;
-        const controller = new EditorController(protyle, true, {placement, minimumGutterWidth: 48});
+        const controller = new EditorController(protyle, true, {...DEFAULT_RENDER_PREFERENCES, placement});
         controller.switchRoot("root");
         controller.applySnapshot(snapshot("root", {placed: "1.2.3"}));
 
         const css = host.querySelector("style")?.textContent ?? "";
         expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe(placement);
-        expect(css).toContain('--siyuan-floating-heading-number-content:"1.2.3"');
+        expect(css).toContain('--siyuan-floating-heading-number-content:"§1.2.3"');
         expect(wysiwyg.firstElementChild?.outerHTML).toBe(originalHeading);
         if (placement === "inside-left") {
             expect(css).toContain("padding-left:calc(");
@@ -78,7 +79,11 @@ describe("EditorController rendering", () => {
         "%s checks only its corresponding %spx/%spx gutter against %spx",
         (placement, paddingLeft, paddingRight, minimumGutterWidth, visible) => {
             const {protyle, host} = createProtyle({paddingLeft, paddingRight});
-            const controller = new EditorController(protyle, true, {placement, minimumGutterWidth});
+            const controller = new EditorController(protyle, true, {
+                ...DEFAULT_RENDER_PREFERENCES,
+                placement,
+                minimumGutterWidth,
+            });
             controller.switchRoot("root");
             controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
 
@@ -91,7 +96,11 @@ describe("EditorController rendering", () => {
         "%s ignores outside gutter thresholds",
         (placement) => {
             const {protyle, host} = createProtyle({paddingLeft: 0, paddingRight: 0});
-            const controller = new EditorController(protyle, true, {placement, minimumGutterWidth: 512});
+            const controller = new EditorController(protyle, true, {
+                ...DEFAULT_RENDER_PREFERENCES,
+                placement,
+                minimumGutterWidth: 512,
+            });
             controller.switchRoot("root");
             controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
 
@@ -153,7 +162,7 @@ describe("EditorController rendering", () => {
         const css = host.querySelector("style")?.textContent ?? "";
         expect(css).not.toContain('data-node-id="in-list"');
         expect(css).toContain('data-node-id="outside-list"');
-        expect(css).toContain('content:"2"');
+        expect(css).toContain('content:"§2"');
         expect(wysiwyg.querySelector('[data-node-id="in-list"]')?.outerHTML).toBe(originalListHeading);
     });
 
@@ -185,8 +194,8 @@ describe("EditorController rendering", () => {
             value: () => ({left: 64, width: 376, top: 0, right: 440, bottom: 30, height: 30, x: 64, y: 0, toJSON() {}}),
         });
         const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
             placement: "outside-right",
-            minimumGutterWidth: 48,
         });
         controller.switchRoot("root");
         controller.applySnapshot(snapshot("root", {right: "123.456.789"}));
@@ -200,7 +209,7 @@ describe("EditorController rendering", () => {
         "%s caps long numbers at 96px and shrinks their font",
         (placement) => {
             const {protyle, host} = createProtyle({headings: heading("long", 1)});
-            const controller = new EditorController(protyle, true, {placement, minimumGutterWidth: 48});
+            const controller = new EditorController(protyle, true, {...DEFAULT_RENDER_PREFERENCES, placement});
             controller.switchRoot("root");
             controller.applySnapshot(snapshot("root", {long: "123.456.789.123.456.789"}));
 
@@ -211,7 +220,25 @@ describe("EditorController rendering", () => {
         },
     );
 
-    it("switches placement with the current snapshot and without replacing heading DOM", () => {
+    it("measures prefix and suffix as part of the capped label", () => {
+        const {protyle, host} = createProtyle({headings: heading("affixed", 1)});
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "inside-left",
+            prefix: "Long chapter prefix ",
+            suffix: " long suffix",
+        });
+        controller.switchRoot("root");
+        controller.applySnapshot(snapshot("root", {affixed: "1"}));
+
+        const css = host.querySelector("style")?.textContent ?? "";
+        expect(css).toContain('content:"Long chapter prefix 1 long suffix"');
+        expect(css).toContain("--siyuan-floating-heading-number-width:96px");
+        expect(css).not.toContain("--siyuan-floating-heading-number-font-size:16px");
+        controller.destroy();
+    });
+
+    it("switches presentation preferences with the current snapshot and without replacing heading DOM", () => {
         const {protyle, host, wysiwyg} = createProtyle({headings: heading("switch", 1)});
         const controller = new EditorController(protyle);
         controller.switchRoot("root");
@@ -219,24 +246,43 @@ describe("EditorController rendering", () => {
         controller.applySnapshot(currentSnapshot);
         const originalHeading = wysiwyg.firstElementChild?.outerHTML;
 
-        controller.setRenderPreferences({placement: "inside-right", minimumGutterWidth: 48});
+        controller.setRenderPreferences({
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "inside-right",
+            prefix: "[",
+            suffix: "]",
+        });
 
         expect(controller.currentSnapshot).toBe(currentSnapshot);
         expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("inside-right");
         expect(host.querySelector("style")?.textContent).toContain("padding-right:calc(");
+        expect(host.querySelector("style")?.textContent).toContain('content:"[1]"');
         expect(wysiwyg.firstElementChild?.outerHTML).toBe(originalHeading);
+
+        controller.setRenderPreferences({
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "inside-right",
+            prefix: "",
+            suffix: "",
+        });
+        expect(controller.currentSnapshot).toBe(currentSnapshot);
+        expect(host.querySelector("style")?.textContent).toContain('content:"1"');
     });
 
-    it("escapes selector IDs and generated content", () => {
+    it("combines and escapes affixes, numbers, and selector IDs", () => {
         const id = 'heading"\\line';
         const {protyle, host} = createProtyle({headings: heading(id, 1)});
-        const controller = new EditorController(protyle);
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            prefix: 'Chapter "',
+            suffix: "\\end",
+        });
         controller.switchRoot("root");
         controller.applySnapshot(snapshot("root", {[id]: '1"\\2'}));
 
         const css = host.querySelector("style")?.textContent ?? "";
         expect(css).toContain(escapeCssString(id));
-        expect(css).toContain(escapeCssString('1"\\2'));
+        expect(css).toContain(escapeCssString('Chapter "1"\\2\\end'));
     });
 
     it("tracks gutter activity on host state and cleans up completely", async () => {
@@ -264,7 +310,7 @@ describe("EditorController rendering", () => {
         "keeps %s visible when SiYuan activates its heading gutter on hover",
         async (placement) => {
             const {protyle, host, gutter} = createProtyle({headings: heading("active", 1)});
-            const controller = new EditorController(protyle, true, {placement, minimumGutterWidth: 48});
+            const controller = new EditorController(protyle, true, {...DEFAULT_RENDER_PREFERENCES, placement});
             controller.switchRoot("root");
             controller.applySnapshot(snapshot("root", {active: "1"}));
 

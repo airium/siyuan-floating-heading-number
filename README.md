@@ -21,11 +21,12 @@ Floating Heading Number displays hierarchical numbers floating beside headings i
 * Excludes headings nested anywhere inside lists, blockquotes, callouts, and query embeds.
 * Shares one full-document snapshot across split editors and refreshes it after heading-affecting transactions.
 * Places numbers outside or inside either edge of the heading row, or immediately after heading text.
+* Adds configurable text before and after each number, defaulting to the section sign (`§`) prefix and no suffix.
 * Auto-hides outside placements when the corresponding gutter is narrower than the configured minimum width.
-* Keeps folded-heading controls available and hides numbers during gutter, selection, highlight, range, and drag interactions.
+* Keeps folded-heading controls available, hides outside numbers during heading hover or gutter activity, and hides all numbers during selection, highlight, range, and drag interactions.
 * Does not modify heading block attributes, classes, styles, transactions, or undo data.
 
-Floating heading numbering is enabled by default. Placement and the minimum outside-gutter width are configured globally in the plugin settings; the default is outside left with a 48 px minimum gutter.
+Floating heading numbering is enabled by default. Placement, prefix, suffix, and the minimum outside-gutter width are configured globally in the plugin settings. The defaults are outside left, a `§` prefix, no suffix, and a 48 px minimum gutter.
 
 ## Compatibility
 
@@ -39,8 +40,8 @@ Synthetic detached-DOM benchmark recorded on 2026-07-16 with Node.js 24.15.0 and
 
 | Blocks | BlockDOM bytes | Full-tree headings |  Parse time | Visible render time | Generated CSS bytes |
 | -----: | -------------: | -----------------: | ----------: | ------------------: | ------------------: |
-| 10,000 |      1,152,956 |              1,000 |   795.71 ms |            15.05 ms |              85,036 |
-| 50,000 |      5,808,956 |              5,000 | 3,898.49 ms |             4.32 ms |              85,036 |
+| 10,000 |      1,152,956 |              1,000 |   951.29 ms |            20.58 ms |              67,284 |
+| 50,000 |      5,808,956 |              5,000 | 3,985.96 ms |             6.59 ms |              67,284 |
 
 The benchmark preserves exact full-tree numbering at both sizes and never uses a visible-only fallback. Unit tests separately verify that simultaneous split-editor loads coalesce into one request.
 
@@ -61,12 +62,12 @@ pnpm check
 
 `plugin.json` is the canonical version source. To prepare a stable release:
 
-1. From an up-to-date `main` branch, run `pnpm version:set 0.3.0` with the intended `MAJOR.MINOR.PATCH` version. This updates both `plugin.json` and `package.json`.
-2. Add a dated `## v0.3.0 - YYYY-MM-DD` section to `CHANGELOG.md`. Its contents become the GitHub release notes.
+1. From an up-to-date `main` branch, run `pnpm version:set 0.4.0` with the intended `MAJOR.MINOR.PATCH` version. This updates both `plugin.json` and `package.json`.
+2. Add a dated `## v0.4.0 - YYYY-MM-DD` section to `CHANGELOG.md`. Its contents become the GitHub release notes.
 3. Run `pnpm check`, review the resulting `package.zip`, then commit and push the manifest and changelog changes to `main`.
-4. On GitHub, open **Actions > Release > Run workflow**, select `main`, and enter `0.3.0` without a `v` prefix.
+4. On GitHub, open **Actions > Release > Run workflow**, select `main`, and enter `0.4.0` without a `v` prefix.
 
-The workflow accepts releases only from `main`, checks that the input matches both manifests, rejects an existing tag or release, installs from the frozen lockfile, runs the complete check/build/package verification, and requires matching changelog notes. It then creates tag and release `v0.3.0` at the dispatched commit and attaches exactly `package.zip`. Do not create the tag manually or replace an asset on an existing release; publish a new version for any correction.
+The workflow accepts releases only from `main`, checks that the input matches both manifests, rejects an existing tag or release, installs from the frozen lockfile, runs the complete check/build/package verification, and requires matching changelog notes. It then creates tag and release `v0.4.0` at the dispatched commit and attaches exactly `package.zip`. Do not create the tag manually or replace an asset on an existing release; publish a new version for any correction.
 
 For the first Marketplace publication, create the GitHub release before adding `airium/siyuan-floating-heading-number` to SiYuan Bazaar's `plugins.txt` in a pull request. After the repository is accepted, Bazaar discovers later GitHub releases automatically.
 

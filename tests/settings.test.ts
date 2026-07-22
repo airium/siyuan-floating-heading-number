@@ -4,6 +4,7 @@ import {
     it,
 } from "vitest";
 import {
+    DEFAULT_HEADING_NUMBER_PREFIX,
     DEFAULT_PLUGIN_SETTINGS,
     isOutsidePlacement,
     normalizeMinimumGutterWidth,
@@ -23,10 +24,12 @@ describe("plugin settings", () => {
             enabled: false,
             placement: "outside-left",
             minimumGutterWidth: 48,
+            prefix: "§",
+            suffix: "",
         });
     });
 
-    it("preserves valid placement and gutter settings", () => {
+    it("migrates pre-affix settings and preserves placement and gutter width", () => {
         expect(parsePluginSettings({
             enabled: false,
             placement: "after-text",
@@ -35,6 +38,32 @@ describe("plugin settings", () => {
             enabled: false,
             placement: "after-text",
             minimumGutterWidth: 72,
+            prefix: "§",
+            suffix: "",
+        });
+    });
+
+    it("preserves custom and empty affixes exactly", () => {
+        expect(parsePluginSettings({
+            enabled: true,
+            placement: "inside-left",
+            minimumGutterWidth: 48,
+            prefix: "Chapter ",
+            suffix: " —",
+        })).toEqual({
+            enabled: true,
+            placement: "inside-left",
+            minimumGutterWidth: 48,
+            prefix: "Chapter ",
+            suffix: " —",
+        });
+        expect(parsePluginSettings({prefix: "", suffix: ""})).toMatchObject({prefix: "", suffix: ""});
+    });
+
+    it("replaces malformed affixes independently with defaults", () => {
+        expect(parsePluginSettings({prefix: 123, suffix: null})).toMatchObject({
+            prefix: DEFAULT_HEADING_NUMBER_PREFIX,
+            suffix: "",
         });
     });
 

@@ -76,11 +76,12 @@ export function renderHeadingNumbers(options: RenderOptions): void {
         if (!id || !number) {
             return;
         }
+        const label = `${renderPreferences.prefix}${number}${renderPreferences.suffix}`;
 
         const sizing = measureSizing(
             wysiwygRect,
             heading,
-            number,
+            label,
             baseFontSize,
             fontFamily,
             renderPreferences.placement,
@@ -88,7 +89,7 @@ export function renderHeadingNumbers(options: RenderOptions): void {
         const selector = `${hostSelector} .protyle-wysiwyg ` +
             `[data-node-id="${escapeCssString(id)}"][data-type="NodeHeading"]`;
         rules.push(
-            `${selector}{--siyuan-floating-heading-number-content:"${escapeCssString(number)}";` +
+            `${selector}{--siyuan-floating-heading-number-content:"${escapeCssString(label)}";` +
                 `--siyuan-floating-heading-number-font-size:${sizing.fontSize}px;` +
                 `--siyuan-floating-heading-number-gap:${HEADING_NUMBER_GAP}px;` +
                 `--siyuan-floating-heading-number-width:${sizing.width}px;}`,

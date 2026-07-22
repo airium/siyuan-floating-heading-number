@@ -54,6 +54,8 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
     private enabledInput?: HTMLInputElement;
     private placementSelect?: HTMLSelectElement;
     private minimumGutterWidthInput?: HTMLInputElement;
+    private prefixInput?: HTMLInputElement;
+    private suffixInput?: HTMLInputElement;
 
     private readonly onStatic = (event: CustomEvent): void => {
         const controller = this.attach(extractEventProtyle(event));
@@ -188,6 +190,8 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
                     minimumGutterWidth: normalizeMinimumGutterWidth(
                         this.minimumGutterWidthInput?.valueAsNumber ?? DEFAULT_MINIMUM_GUTTER_WIDTH,
                     ),
+                    prefix: this.prefixInput?.value ?? DEFAULT_PLUGIN_SETTINGS.prefix,
+                    suffix: this.suffixInput?.value ?? DEFAULT_PLUGIN_SETTINGS.suffix,
                 };
                 this.syncSettingInputs();
                 this.applySettings();
@@ -225,6 +229,32 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
                 select.value = this.settingsValue.placement;
                 this.placementSelect = select;
                 return select;
+            },
+        });
+        this.setting.addItem({
+            title: this.i18n.prefixTitle,
+            description: this.i18n.prefixDescription,
+            direction: "column",
+            createActionElement: () => {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.className = "b3-text-field fn__size200";
+                input.value = this.settingsValue.prefix;
+                this.prefixInput = input;
+                return input;
+            },
+        });
+        this.setting.addItem({
+            title: this.i18n.suffixTitle,
+            description: this.i18n.suffixDescription,
+            direction: "column",
+            createActionElement: () => {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.className = "b3-text-field fn__size200";
+                input.value = this.settingsValue.suffix;
+                this.suffixInput = input;
+                return input;
             },
         });
         this.setting.addItem({
@@ -274,6 +304,12 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
         }
         if (this.minimumGutterWidthInput) {
             this.minimumGutterWidthInput.value = String(this.settingsValue.minimumGutterWidth);
+        }
+        if (this.prefixInput) {
+            this.prefixInput.value = this.settingsValue.prefix;
+        }
+        if (this.suffixInput) {
+            this.suffixInput.value = this.settingsValue.suffix;
         }
     }
 

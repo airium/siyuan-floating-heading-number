@@ -8,6 +8,10 @@
   "placementInsideLeft": "左侧内部",
   "placementInsideRight": "右侧内部",
   "placementAfterText": "标题文本之后",
+  "prefixTitle": "编号前缀",
+  "prefixDescription": "紧接在每个标题编号之前显示的文本，保留空格。",
+  "suffixTitle": "编号后缀",
+  "suffixDescription": "紧接在每个标题编号之后显示的文本，保留空格。",
   "minimumGutterWidthTitle": "最小侧栏宽度",
   "minimumGutterWidthDescription": "当对应侧栏窄于此像素值时，隐藏位于标题外部的编号。",
   "loadError": "无法计算浮动标题编号"

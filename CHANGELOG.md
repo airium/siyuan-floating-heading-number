@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0 - 2026-07-22
+
+* Add configurable text before and after heading numbers.
+* Use the section sign (`§`) as the default prefix and an empty default suffix.
+
 ## v0.2.0 - 2026-07-22
 
 * Add five configurable heading-number placements.
