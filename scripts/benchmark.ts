@@ -2,6 +2,7 @@ import {Window} from "happy-dom";
 import {performance} from "node:perf_hooks";
 import {parseHeadingSnapshot} from "../src/numbering";
 import {renderHeadingNumbers} from "../src/renderer";
+import {DEFAULT_RENDER_PREFERENCES} from "../src/settings";
 import type {MinimalProtyle} from "../src/types";
 
 interface BenchmarkResult {
@@ -72,6 +73,7 @@ function runGeneratedBenchmark(blocks: number): BenchmarkResult {
     renderHeadingNumbers({
         controllerId: "benchmark-controller",
         enabled: true,
+        renderPreferences: DEFAULT_RENDER_PREFERENCES,
         protyle,
         snapshot,
         styleElement: style,

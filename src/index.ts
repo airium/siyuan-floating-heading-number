@@ -10,8 +10,20 @@ import {
     HeadingNumberService,
     isAbortError,
 } from "./service";
+import {
+    DEFAULT_MINIMUM_GUTTER_WIDTH,
+    DEFAULT_PLUGIN_SETTINGS,
+    isHeadingNumberPlacement,
+    MINIMUM_GUTTER_WIDTH_MAX,
+    MINIMUM_GUTTER_WIDTH_MIN,
+    normalizeMinimumGutterWidth,
+    parsePluginSettings,
+    renderPreferences,
+} from "./settings";
 import {transactionMayChangeHeadingNumbers} from "./transactions";
+import {HEADING_NUMBER_PLACEMENTS} from "./types";
 import type {
+    HeadingNumberPlacement,
     MinimalProtyle,
     PluginSettings,
     Transaction,
@@ -23,16 +35,25 @@ import "./index.scss";
 const SETTINGS_FILE = "settings.json";
 const REFRESH_DELAY = 300;
 const SUPPORTED_FRONTENDS = new Set(["desktop", "browser-desktop", "desktop-window"]);
+const PLACEMENT_LABEL_KEYS: Record<HeadingNumberPlacement, string> = {
+    "outside-left": "placementOutsideLeft",
+    "outside-right": "placementOutsideRight",
+    "inside-left": "placementInsideLeft",
+    "inside-right": "placementInsideRight",
+    "after-text": "placementAfterText",
+};
 
 export default class FloatingHeadingNumberPlugin extends Plugin {
     private readonly service = new HeadingNumberService();
     private readonly controllers = new Map<HTMLElement, EditorController>();
     private readonly refreshTimers = new Map<string, number>();
     private readonly loggedFailures = new Set<string>();
-    private settingsValue: PluginSettings = {enabled: true};
+    private settingsValue: PluginSettings = {...DEFAULT_PLUGIN_SETTINGS};
     private runtimeSupported = false;
     private appearanceObserver?: MutationObserver;
-    private settingInput?: HTMLInputElement;
+    private enabledInput?: HTMLInputElement;
+    private placementSelect?: HTMLSelectElement;
+    private minimumGutterWidthInput?: HTMLInputElement;
 
     private readonly onStatic = (event: CustomEvent): void => {
         const controller = this.attach(extractEventProtyle(event));
@@ -140,29 +161,35 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
 
     async onDataChanged(): Promise<void> {
         await this.loadSettings();
-        if (this.settingInput) {
-            this.settingInput.checked = this.settingsValue.enabled;
-        }
+        this.syncSettingInputs();
         this.applySettings();
     }
 
     private async loadSettings(): Promise<void> {
         try {
             const stored = await this.loadData(SETTINGS_FILE);
-            this.settingsValue = {
-                enabled: isRecord(stored) && typeof stored.enabled === "boolean" ? stored.enabled : true,
-            };
+            this.settingsValue = parsePluginSettings(stored);
         } catch (error) {
             console.warn(`[${this.name}] failed to load ${SETTINGS_FILE}`, error);
-            this.settingsValue = {enabled: true};
+            this.settingsValue = {...DEFAULT_PLUGIN_SETTINGS};
         }
     }
 
     private configureSettings(): void {
         this.setting = new Setting({
             confirmCallback: () => {
-                const enabled = this.settingInput?.checked ?? true;
-                this.settingsValue = {enabled};
+                const placementValue = this.placementSelect?.value;
+                const placement = isHeadingNumberPlacement(placementValue) ?
+                    placementValue :
+                    DEFAULT_PLUGIN_SETTINGS.placement;
+                this.settingsValue = {
+                    enabled: this.enabledInput?.checked ?? DEFAULT_PLUGIN_SETTINGS.enabled,
+                    placement,
+                    minimumGutterWidth: normalizeMinimumGutterWidth(
+                        this.minimumGutterWidthInput?.valueAsNumber ?? DEFAULT_MINIMUM_GUTTER_WIDTH,
+                    ),
+                };
+                this.syncSettingInputs();
                 this.applySettings();
                 void this.saveData(SETTINGS_FILE, this.settingsValue).catch((error) => {
                     console.warn(`[${this.name}] failed to save ${SETTINGS_FILE}`, error);
@@ -178,13 +205,49 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
                 input.type = "checkbox";
                 input.className = "b3-switch";
                 input.checked = this.settingsValue.enabled;
-                this.settingInput = input;
+                this.enabledInput = input;
+                return input;
+            },
+        });
+        this.setting.addItem({
+            title: this.i18n.placementTitle,
+            description: this.i18n.placementDescription,
+            direction: "column",
+            createActionElement: () => {
+                const select = document.createElement("select");
+                select.className = "b3-select fn__size200";
+                HEADING_NUMBER_PLACEMENTS.forEach((placement) => {
+                    const option = document.createElement("option");
+                    option.value = placement;
+                    option.textContent = this.i18n[PLACEMENT_LABEL_KEYS[placement]];
+                    select.append(option);
+                });
+                select.value = this.settingsValue.placement;
+                this.placementSelect = select;
+                return select;
+            },
+        });
+        this.setting.addItem({
+            title: this.i18n.minimumGutterWidthTitle,
+            description: this.i18n.minimumGutterWidthDescription,
+            direction: "column",
+            createActionElement: () => {
+                const input = document.createElement("input");
+                input.type = "number";
+                input.className = "b3-text-field fn__size200";
+                input.min = String(MINIMUM_GUTTER_WIDTH_MIN);
+                input.max = String(MINIMUM_GUTTER_WIDTH_MAX);
+                input.step = "1";
+                input.value = String(this.settingsValue.minimumGutterWidth);
+                this.minimumGutterWidthInput = input;
                 return input;
             },
         });
     }
 
     private applySettings(): void {
+        const preferences = renderPreferences(this.settingsValue);
+        this.controllers.forEach((controller) => controller.setRenderPreferences(preferences));
         if (!this.settingsValue.enabled) {
             this.refreshTimers.forEach((timer) => window.clearTimeout(timer));
             this.refreshTimers.clear();
@@ -196,8 +259,22 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
 
         this.controllers.forEach((controller) => {
             controller.setEnabled(true);
-            this.loadController(controller);
+            if (!controller.currentSnapshot) {
+                this.loadController(controller);
+            }
         });
+    }
+
+    private syncSettingInputs(): void {
+        if (this.enabledInput) {
+            this.enabledInput.checked = this.settingsValue.enabled;
+        }
+        if (this.placementSelect) {
+            this.placementSelect.value = this.settingsValue.placement;
+        }
+        if (this.minimumGutterWidthInput) {
+            this.minimumGutterWidthInput.value = String(this.settingsValue.minimumGutterWidth);
+        }
     }
 
     private attach(protyle?: MinimalProtyle): EditorController | undefined {
@@ -207,7 +284,11 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
 
         let controller = this.controllers.get(protyle.element);
         if (!controller) {
-            controller = new EditorController(protyle, this.settingsValue.enabled);
+            controller = new EditorController(
+                protyle,
+                this.settingsValue.enabled,
+                renderPreferences(this.settingsValue),
+            );
             this.controllers.set(protyle.element, controller);
         } else {
             controller.updateProtyle(protyle);
@@ -407,8 +488,4 @@ function extractOperations(data: unknown): {operations: TransactionOperation[]; 
         operations.push(...transaction.doOperations);
     }
     return {operations, incomplete: false};
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return !!value && typeof value === "object" && !Array.isArray(value);
 }

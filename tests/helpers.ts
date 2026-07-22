@@ -5,7 +5,8 @@ import type {
 
 export function heading(id: string, level: number, text = id, attributes = ""): string {
     const escapedId = id.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
-    return `<div data-node-id="${escapedId}" data-type="NodeHeading" data-subtype="h${level}" ${attributes}>${text}</div>`;
+    return `<div data-node-id="${escapedId}" data-type="NodeHeading" data-subtype="h${level}" ${attributes}>` +
+        `<div contenteditable="true">${text}</div></div>`;
 }
 
 export function paragraph(id: string, text = id): string {
@@ -25,6 +26,7 @@ export function createProtyle(options: {
     id?: string;
     headings?: string;
     paddingLeft?: number;
+    paddingRight?: number;
     history?: boolean;
     backlink?: boolean;
 } = {}): {protyle: MinimalProtyle; host: HTMLElement; wysiwyg: HTMLElement; gutter: HTMLElement;} {
@@ -33,6 +35,7 @@ export function createProtyle(options: {
     const wysiwyg = document.createElement("div");
     wysiwyg.className = "protyle-wysiwyg";
     wysiwyg.style.paddingLeft = `${options.paddingLeft ?? 64}px`;
+    wysiwyg.style.paddingRight = `${options.paddingRight ?? 64}px`;
     wysiwyg.innerHTML = options.headings ?? heading("heading-1", 1);
     const gutter = document.createElement("div");
     gutter.className = "protyle-gutters fn__none";

@@ -1,10 +1,11 @@
 import {EXCLUDED_HEADING_CONTAINER_SELECTOR} from "./numbering";
 import type {
+    HeadingNumberPlacement,
+    HeadingNumberRenderPreferences,
     HeadingSnapshot,
     MinimalProtyle,
 } from "./types";
 
-export const HEADING_NUMBER_MIN_GUTTER = 48;
 export const HEADING_NUMBER_MAX_WIDTH = 96;
 export const HEADING_NUMBER_GAP = 8;
 export const HEADING_NUMBER_FOLDED_GAP = 6;
@@ -19,6 +20,7 @@ export interface RenderOptions {
     controllerId: string;
     enabled: boolean;
     gutterHeadingId?: string;
+    renderPreferences: HeadingNumberRenderPreferences;
     protyle: MinimalProtyle;
     snapshot?: HeadingSnapshot;
     styleElement: HTMLStyleElement;
@@ -33,22 +35,25 @@ export function isProtyleSupported(protyle: MinimalProtyle): boolean {
 export function clearHeadingNumberRendering(host: HTMLElement, styleElement: HTMLStyleElement): void {
     delete host.dataset.siyuanFloatingHeadingNumberPlugin;
     delete host.dataset.siyuanFloatingHeadingNumberGutterId;
+    delete host.dataset.siyuanFloatingHeadingNumberPlacement;
     styleElement.textContent = "";
 }
 
 export function renderHeadingNumbers(options: RenderOptions): void {
-    const {controllerId, enabled, gutterHeadingId, protyle, snapshot, styleElement} = options;
+    const {controllerId, enabled, gutterHeadingId, protyle, renderPreferences, snapshot, styleElement} = options;
     const host = protyle.element;
     const wysiwyg = protyle.wysiwyg.element;
+    const computedStyle = window.getComputedStyle(wysiwyg);
     if (
         !enabled || !snapshot || snapshot.rootId !== protyle.block.rootID || !isProtyleSupported(protyle) ||
-        !hasHeadingNumberGutter(wysiwyg)
+        !hasRequiredGutter(computedStyle, renderPreferences)
     ) {
         clearHeadingNumberRendering(host, styleElement);
         return;
     }
 
     host.dataset.siyuanFloatingHeadingNumberPlugin = controllerId;
+    host.dataset.siyuanFloatingHeadingNumberPlacement = renderPreferences.placement;
     if (gutterHeadingId) {
         host.dataset.siyuanFloatingHeadingNumberGutterId = gutterHeadingId;
     } else {
@@ -59,7 +64,6 @@ export function renderHeadingNumbers(options: RenderOptions): void {
     const rules: string[] = [];
     const renderedHeadingIds = new Set<string>();
     const wysiwygRect = wysiwyg.getBoundingClientRect();
-    const computedStyle = window.getComputedStyle(wysiwyg);
     const baseFontSize = Number.parseFloat(computedStyle.fontSize) || 16;
     const fontFamily = computedStyle.fontFamily || "sans-serif";
 
@@ -73,24 +77,39 @@ export function renderHeadingNumbers(options: RenderOptions): void {
             return;
         }
 
-        const sizing = measureSizing(wysiwygRect, heading, number, baseFontSize, fontFamily);
-        const selector =
-            `${hostSelector} .protyle-wysiwyg:not(.protyle-wysiwyg--hiderange):not(.protyle-wysiwyg--selecting) ` +
-            `[data-node-id="${escapeCssString(id)}"][data-type="NodeHeading"]` +
-            ":not(.protyle-wysiwyg--select):not(.protyle-wysiwyg--hl):not([select-start]):not([select-end])" +
-            ':not([class*="dragover"])::after';
+        const sizing = measureSizing(
+            wysiwygRect,
+            heading,
+            number,
+            baseFontSize,
+            fontFamily,
+            renderPreferences.placement,
+        );
+        const selector = `${hostSelector} .protyle-wysiwyg ` +
+            `[data-node-id="${escapeCssString(id)}"][data-type="NodeHeading"]`;
         rules.push(
-            `${selector}{content:"${escapeCssString(number)}";` +
+            `${selector}{--siyuan-floating-heading-number-content:"${escapeCssString(number)}";` +
                 `--siyuan-floating-heading-number-font-size:${sizing.fontSize}px;` +
+                `--siyuan-floating-heading-number-gap:${HEADING_NUMBER_GAP}px;` +
                 `--siyuan-floating-heading-number-width:${sizing.width}px;}`,
         );
+        if (renderPreferences.placement === "inside-left" || renderPreferences.placement === "inside-right") {
+            const paddingProperty = renderPreferences.placement === "inside-left" ? "padding-left" : "padding-right";
+            rules.push(
+                `${selector}>[contenteditable]:first-child{${paddingProperty}:` +
+                    `calc(${sizing.width}px + ${HEADING_NUMBER_GAP}px);}`,
+            );
+        }
         renderedHeadingIds.add(id);
     });
 
-    if (gutterHeadingId && renderedHeadingIds.has(gutterHeadingId)) {
+    const gutterMayOverlapNumber = renderPreferences.placement === "outside-left" ||
+        renderPreferences.placement === "outside-right";
+    if (gutterMayOverlapNumber && gutterHeadingId && renderedHeadingIds.has(gutterHeadingId)) {
         rules.push(
             `${hostSelector}[data-siyuan-floating-heading-number-gutter-id="${escapeCssString(gutterHeadingId)}"] ` +
-                `[data-node-id="${escapeCssString(gutterHeadingId)}"][data-type="NodeHeading"]::after{opacity:0;}`,
+                `[data-node-id="${escapeCssString(gutterHeadingId)}"][data-type="NodeHeading"]` +
+                "{--siyuan-floating-heading-number-opacity:0;}",
         );
     }
     styleElement.textContent = rules.join("\n");
@@ -104,9 +123,18 @@ export function escapeCssString(value: string): string {
         .replace(/\r\n|\r|\n|\f/g, (character) => `\\${character.codePointAt(0)?.toString(16)} `);
 }
 
-function hasHeadingNumberGutter(wysiwyg: HTMLElement): boolean {
-    const paddingLeft = Number.parseFloat(wysiwyg.style.paddingLeft || window.getComputedStyle(wysiwyg).paddingLeft);
-    return Number.isFinite(paddingLeft) && paddingLeft >= HEADING_NUMBER_MIN_GUTTER;
+function hasRequiredGutter(
+    computedStyle: CSSStyleDeclaration,
+    renderPreferences: HeadingNumberRenderPreferences,
+): boolean {
+    if (renderPreferences.placement !== "outside-left" && renderPreferences.placement !== "outside-right") {
+        return true;
+    }
+    const paddingValue = renderPreferences.placement === "outside-left" ?
+        computedStyle.paddingLeft :
+        computedStyle.paddingRight;
+    const padding = Number.parseFloat(paddingValue);
+    return Number.isFinite(padding) && padding >= renderPreferences.minimumGutterWidth;
 }
 
 function measureSizing(
@@ -115,18 +143,31 @@ function measureSizing(
     number: string,
     baseFontSize: number,
     fontFamily: string,
+    placement: HeadingNumberPlacement,
 ): {fontSize: number; width: number;} {
     const headingRect = heading.getBoundingClientRect();
     const folded = heading.getAttribute("fold") === "1";
-    const gap = folded ? HEADING_NUMBER_FOLDED_GAP : HEADING_NUMBER_GAP;
-    const minimumWidth = folded ? MIN_FONT_SIZE : MIN_WIDTH;
+    const foldedOutsideLeft = folded && placement === "outside-left";
+    const gap = foldedOutsideLeft ? HEADING_NUMBER_FOLDED_GAP : HEADING_NUMBER_GAP;
+    const minimumWidth = foldedOutsideLeft ? MIN_FONT_SIZE : MIN_WIDTH;
     let availableWidth = HEADING_NUMBER_MAX_WIDTH;
 
-    if (wysiwygRect.width > 0 && headingRect.width > 0) {
-        const reservedWidth = folded ? HEADING_NUMBER_FOLDED_MARKER_WIDTH + gap : gap;
+    if (wysiwygRect.width > 0 && headingRect.width > 0 && placement === "outside-left") {
+        const reservedWidth = foldedOutsideLeft ? HEADING_NUMBER_FOLDED_MARKER_WIDTH + gap : gap;
         availableWidth = Math.min(
             HEADING_NUMBER_MAX_WIDTH,
-            Math.max(minimumWidth, Math.floor(headingRect.left - wysiwygRect.left - reservedWidth - 1)),
+            Math.max(
+                minimumWidth,
+                Math.floor(headingRect.left - wysiwygRect.left - reservedWidth - 1),
+            ),
+        );
+    } else if (wysiwygRect.width > 0 && headingRect.width > 0 && placement === "outside-right") {
+        availableWidth = Math.min(
+            HEADING_NUMBER_MAX_WIDTH,
+            Math.max(
+                minimumWidth,
+                Math.floor(wysiwygRect.right - headingRect.right - gap - 1),
+            ),
         );
     }
 

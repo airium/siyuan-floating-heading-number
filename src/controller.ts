@@ -2,8 +2,10 @@ import {
     clearHeadingNumberRendering,
     renderHeadingNumbers,
 } from "./renderer";
+import {DEFAULT_RENDER_PREFERENCES} from "./settings";
 import type {
     ControllerRequestToken,
+    HeadingNumberRenderPreferences,
     HeadingSnapshot,
     MinimalProtyle,
 } from "./types";
@@ -18,6 +20,7 @@ export class EditorController {
     private rootIdValue?: string;
     private snapshot?: HeadingSnapshot;
     private enabled = true;
+    private renderPreferencesValue: HeadingNumberRenderPreferences;
     private destroyed = false;
     private generation = 0;
     private requestController = new AbortController();
@@ -34,10 +37,15 @@ export class EditorController {
         }
     };
 
-    constructor(protyle: MinimalProtyle, enabled = true) {
+    constructor(
+        protyle: MinimalProtyle,
+        enabled = true,
+        renderPreferences: HeadingNumberRenderPreferences = DEFAULT_RENDER_PREFERENCES,
+    ) {
         this.protyle = protyle;
         this.host = protyle.element;
         this.enabled = enabled;
+        this.renderPreferencesValue = {...renderPreferences};
         nextControllerId += 1;
         this.id = `siyuan-floating-heading-number-${nextControllerId}`;
         this.styleElement = this.host.ownerDocument.createElement("style");
@@ -87,6 +95,17 @@ export class EditorController {
             this.cancelRequest();
             this.snapshot = undefined;
         }
+        this.render();
+    }
+
+    setRenderPreferences(renderPreferences: HeadingNumberRenderPreferences): void {
+        if (
+            this.renderPreferencesValue.placement === renderPreferences.placement &&
+            this.renderPreferencesValue.minimumGutterWidth === renderPreferences.minimumGutterWidth
+        ) {
+            return;
+        }
+        this.renderPreferencesValue = {...renderPreferences};
         this.render();
     }
 
@@ -150,6 +169,7 @@ export class EditorController {
             controllerId: this.id,
             enabled: this.enabled,
             gutterHeadingId: this.gutterHeadingId,
+            renderPreferences: this.renderPreferencesValue,
             protyle: this.protyle,
             snapshot: this.snapshot,
             styleElement: this.styleElement,

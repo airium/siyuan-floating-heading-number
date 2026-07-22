@@ -52,6 +52,24 @@
             font-weight: 600;
         }
 
+        .placement-picker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            margin-right: 16px;
+            font-size: 12px;
+        }
+
+        .placement-picker select {
+            height: 28px;
+            padding: 0 28px 0 8px;
+            border: 1px solid #cfd5d2;
+            border-radius: 4px;
+            background: #fff;
+            color: #303835;
+        }
+
         .workspace {
             height: 722px;
             display: grid;
@@ -129,7 +147,7 @@
         .protyle-wysiwyg {
             width: 100%;
             height: 100%;
-            padding: 24px 22px 64px 104px;
+            padding: 24px 104px 64px;
             overflow: hidden;
             cursor: text;
             font-size: 16px;
@@ -189,54 +207,107 @@
             color: #263943;
         }
 
-        [data-siyuan-floating-heading-number-plugin] .protyle-wysiwyg:not(.protyle-wysiwyg--hiderange):not(.protyle-wysiwyg--selecting) [data-node-id][data-type="NodeHeading"]:not(.protyle-wysiwyg--select):not(.protyle-wysiwyg--hl):not([select-start]):not([select-end]):not([class*="dragover"])::after {
+        [data-siyuan-floating-heading-number-plugin]:not([data-siyuan-floating-heading-number-placement="inside-left"]):not([data-siyuan-floating-heading-number-placement="inside-right"]):not([data-siyuan-floating-heading-number-placement="after-text"]) [data-type="NodeHeading"]:hover {
+            --siyuan-floating-heading-number-opacity: 0;
+        }
+
+        [data-siyuan-floating-heading-number-placement="outside-left"] [data-type="NodeHeading"]::after,
+        [data-siyuan-floating-heading-number-placement="outside-right"] [data-type="NodeHeading"]::after,
+        [data-siyuan-floating-heading-number-placement="inside-left"] [data-type="NodeHeading"]::after,
+        [data-siyuan-floating-heading-number-placement="inside-right"] [data-type="NodeHeading"]::after {
             position: absolute;
             top: calc(50% - 0.8125em);
-            right: calc(100% + 8px);
-            width: var(--siyuan-floating-heading-number-width, 34px);
+            width: var(--siyuan-floating-heading-number-width, 0);
             height: 1.625em;
             overflow: hidden;
             color: #74807b;
+            content: var(--siyuan-floating-heading-number-content, "");
             font-size: var(--siyuan-floating-heading-number-font-size, 16px);
             font-weight: 600;
             line-height: 1.625;
+            opacity: var(--siyuan-floating-heading-number-opacity, 1);
             pointer-events: none;
-            text-align: right;
             white-space: nowrap;
         }
 
-        [data-siyuan-floating-heading-number-plugin] .protyle-wysiwyg [data-node-id][data-type="NodeHeading"][fold="1"]::after {
+        [data-siyuan-floating-heading-number-placement="outside-left"] [data-type="NodeHeading"]::after {
+            right: calc(100% + 8px);
+            text-align: right;
+        }
+
+        [data-siyuan-floating-heading-number-placement="outside-left"] [data-type="NodeHeading"][fold="1"]::after {
             right: calc(100% + 16px + 6px);
         }
 
-        [data-node-id="architecture"]::after {
+        [data-siyuan-floating-heading-number-placement="outside-right"] [data-type="NodeHeading"]::after {
+            left: calc(100% + 8px);
+            text-align: left;
+        }
+
+        [data-siyuan-floating-heading-number-placement="inside-left"] [data-type="NodeHeading"]::after {
+            left: 0;
+            text-align: right;
+        }
+
+        [data-siyuan-floating-heading-number-placement="inside-left"] [data-type="NodeHeading"] > [contenteditable] {
+            padding-left: calc(var(--siyuan-floating-heading-number-width) + 8px);
+        }
+
+        [data-siyuan-floating-heading-number-placement="inside-right"] [data-type="NodeHeading"]::after {
+            right: 0;
+            text-align: left;
+        }
+
+        [data-siyuan-floating-heading-number-placement="inside-right"] [data-type="NodeHeading"] > [contenteditable] {
+            padding-right: calc(var(--siyuan-floating-heading-number-width) + 8px);
+        }
+
+        [data-siyuan-floating-heading-number-placement="after-text"] [data-type="NodeHeading"] > [contenteditable]::after {
+            display: inline-block;
+            width: var(--siyuan-floating-heading-number-width, 0);
+            height: 1.625em;
+            margin-inline-start: 8px;
+            overflow: hidden;
+            color: #74807b;
+            content: var(--siyuan-floating-heading-number-content, "");
+            font-size: var(--siyuan-floating-heading-number-font-size, 16px);
+            font-weight: 600;
+            line-height: 1.625;
+            opacity: var(--siyuan-floating-heading-number-opacity, 1);
+            pointer-events: none;
+            text-align: left;
+            vertical-align: baseline;
+            white-space: nowrap;
+        }
+
+        [data-node-id="architecture"] {
             --siyuan-floating-heading-number-width: 10px;
             --siyuan-floating-heading-number-font-size: 16px;
-            content: "1";
+            --siyuan-floating-heading-number-content: "1";
         }
 
-        [data-node-id="request-flow"]::after {
+        [data-node-id="request-flow"] {
             --siyuan-floating-heading-number-width: 26px;
             --siyuan-floating-heading-number-font-size: 16px;
-            content: "1.1";
+            --siyuan-floating-heading-number-content: "1.1";
         }
 
-        [data-node-id="validation"]::after {
+        [data-node-id="validation"] {
             --siyuan-floating-heading-number-width: 41px;
             --siyuan-floating-heading-number-font-size: 16px;
-            content: "1.1.1";
+            --siyuan-floating-heading-number-content: "1.1.1";
         }
 
-        [data-node-id="errors"]::after {
+        [data-node-id="errors"] {
             --siyuan-floating-heading-number-width: 26px;
             --siyuan-floating-heading-number-font-size: 16px;
-            content: "1.2";
+            --siyuan-floating-heading-number-content: "1.2";
         }
 
-        [data-node-id="rollout"]::after {
+        [data-node-id="rollout"] {
             --siyuan-floating-heading-number-width: 10px;
             --siyuan-floating-heading-number-font-size: 16px;
-            content: "2";
+            --siyuan-floating-heading-number-content: "2";
         }
 
         .status {
@@ -263,6 +334,16 @@
         <header class="topbar">
             <div class="brand">SiYuan</div>
             <div class="crumb"><span>Engineering</span><span>/</span><strong>API Design Notes</strong></div>
+            <label class="placement-picker">
+                <span>Placement</span>
+                <select id="placement">
+                    <option value="outside-left">Outside left</option>
+                    <option value="outside-right">Outside right</option>
+                    <option value="inside-left">Inside left</option>
+                    <option value="inside-right">Inside right</option>
+                    <option value="after-text">After heading text</option>
+                </select>
+            </label>
         </header>
         <div class="workspace">
             <aside class="sidebar">
@@ -278,17 +359,17 @@
                     <h1 class="document-title">API Design Notes</h1>
                     <div class="document-meta">Updated today</div>
                 </div>
-                <div class="protyle" data-siyuan-floating-heading-number-plugin="preview-controller">
+                <div class="protyle" data-siyuan-floating-heading-number-plugin="preview-controller" data-siyuan-floating-heading-number-placement="outside-left">
                     <div class="protyle-wysiwyg">
-                        <h2 data-node-id="architecture" data-type="NodeHeading" data-subtype="h2">Architecture</h2>
+                        <div data-node-id="architecture" data-type="NodeHeading" data-subtype="h2"><div contenteditable="true">Architecture</div></div>
                         <div data-node-id="p1" data-type="NodeParagraph">The desktop client and browser frontend share the same request contract and validation path.</div>
-                        <h3 data-node-id="request-flow" data-type="NodeHeading" data-subtype="h3" fold="1"><span class="fold-marker"></span>Request flow</h3>
+                        <div data-node-id="request-flow" data-type="NodeHeading" data-subtype="h3" fold="1"><div contenteditable="true">Request flow</div><span class="fold-marker"></span></div>
                         <div data-node-id="p2" data-type="NodeParagraph">Resolve the document root, load the complete tree, then render only the blocks mounted in the editor.</div>
-                        <h4 data-node-id="validation" data-type="NodeHeading" data-subtype="h4">Response validation</h4>
+                        <div data-node-id="validation" data-type="NodeHeading" data-subtype="h4"><div contenteditable="true">Response validation</div></div>
                         <div data-node-id="p3" data-type="NodeParagraph">Reject stale generations and malformed payloads before applying presentation rules.</div>
-                        <h3 data-node-id="errors" data-type="NodeHeading" data-subtype="h3">Error handling</h3>
+                        <div data-node-id="errors" data-type="NodeHeading" data-subtype="h3"><div contenteditable="true">Error handling</div></div>
                         <div data-node-id="p4" data-type="NodeParagraph">Keep the last valid numbering map while a replacement request is pending.</div>
-                        <h2 data-node-id="rollout" data-type="NodeHeading" data-subtype="h2">Rollout</h2>
+                        <div data-node-id="rollout" data-type="NodeHeading" data-subtype="h2"><div contenteditable="true">Rollout</div></div>
                         <div data-node-id="p5" data-type="NodeParagraph"><span class="selection">Verify long documents</span>, split editors, and rapid document switching before release.</div>
                     </div>
                 </div>
@@ -296,5 +377,17 @@
             </section>
         </div>
     </main>
+    <script>
+        const placement = document.querySelector("#placement");
+        const protyle = document.querySelector(".protyle");
+        const requestedPlacement = new URLSearchParams(window.location.search).get("placement");
+        if (Array.from(placement.options).some((option) => option.value === requestedPlacement)) {
+            placement.value = requestedPlacement;
+            protyle.dataset.siyuanFloatingHeadingNumberPlacement = requestedPlacement;
+        }
+        placement.addEventListener("change", () => {
+            protyle.dataset.siyuanFloatingHeadingNumberPlacement = placement.value;
+        });
+    </script>
 </body>
 </html>

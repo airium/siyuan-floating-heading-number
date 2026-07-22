@@ -1,5 +1,22 @@
+export const HEADING_NUMBER_PLACEMENTS = [
+    "outside-left",
+    "outside-right",
+    "inside-left",
+    "inside-right",
+    "after-text",
+] as const;
+
+export type HeadingNumberPlacement = typeof HEADING_NUMBER_PLACEMENTS[number];
+
+export interface HeadingNumberRenderPreferences {
+    placement: HeadingNumberPlacement;
+    minimumGutterWidth: number;
+}
+
 export interface PluginSettings {
     enabled: boolean;
+    placement: HeadingNumberPlacement;
+    minimumGutterWidth: number;
 }
 
 export interface BlockDOMResponse {

@@ -1,5 +1,14 @@
 {
   "enabledTitle": "Floating heading numbers",
-  "enabledDescription": "Display exact full-document heading numbers floating in editor gutters.",
+  "enabledDescription": "Display exact full-document heading numbers beside headings.",
+  "placementTitle": "Number placement",
+  "placementDescription": "Choose where heading numbers are displayed.",
+  "placementOutsideLeft": "Outside left",
+  "placementOutsideRight": "Outside right",
+  "placementInsideLeft": "Inside left",
+  "placementInsideRight": "Inside right",
+  "placementAfterText": "After heading text",
+  "minimumGutterWidthTitle": "Minimum gutter width",
+  "minimumGutterWidthDescription": "Hide outside placements when the corresponding gutter is narrower than this value in pixels.",
   "loadError": "Unable to calculate floating heading numbers"
 }

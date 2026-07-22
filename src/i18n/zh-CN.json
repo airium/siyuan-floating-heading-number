@@ -1,5 +1,14 @@
 {
   "enabledTitle": "浮动标题编号",
-  "enabledDescription": "在编辑器侧栏浮动显示基于完整文档计算的精确标题编号。",
+  "enabledDescription": "在标题旁显示基于完整文档计算的精确标题编号。",
+  "placementTitle": "编号位置",
+  "placementDescription": "选择标题编号的显示位置。",
+  "placementOutsideLeft": "左侧外部",
+  "placementOutsideRight": "右侧外部",
+  "placementInsideLeft": "左侧内部",
+  "placementInsideRight": "右侧内部",
+  "placementAfterText": "标题文本之后",
+  "minimumGutterWidthTitle": "最小侧栏宽度",
+  "minimumGutterWidthDescription": "当对应侧栏窄于此像素值时，隐藏位于标题外部的编号。",
   "loadError": "无法计算浮动标题编号"
 }

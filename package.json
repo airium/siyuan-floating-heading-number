@@ -1,6 +1,6 @@
 {
   "name": "siyuan-floating-heading-number",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Exact full-document heading numbers floating beside headings in the SiYuan editor",
   "main": "index.js",
   "scripts": {

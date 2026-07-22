@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.0 - 2026-07-22
+
+* Add five configurable heading-number placements.
+* Add a configurable minimum gutter width for outside placements.
+* Keep inside and after-text numbers visible during heading hover and gutter activation.
+* Keep the minimum gutter width field editable for every placement.
+
 ## v0.1.1 - 2026-07-22
 
 * Exclude headings nested in lists from numbering and rendering.
