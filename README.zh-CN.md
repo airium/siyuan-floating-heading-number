@@ -8,16 +8,6 @@
 * **显示方式灵活。** 提供五种位置并支持自定义前后缀；默认在标题左侧内部显示为 `§1`。
 * **不侵入文档。** 插件不修改标题块、事务或撤销数据，同时会适配编辑器的交互状态。
 
-## 功能演示
-
-### 编号逻辑 (左侧外部放置)
-
-<img width="600" alt="层级标题编号演示" src="https://raw.githubusercontent.com/airium/siyuan-floating-heading-number/main/assets/numbering-logic.gif">
-
-### 在窄视图中自动隐藏
-
-<img width="600" alt="标题编号在窄编辑器中自动隐藏" src="https://raw.githubusercontent.com/airium/siyuan-floating-heading-number/main/assets/narrow-view-auto-hide.gif">
-
 ## 行为
 
 浮动标题编号默认启用。可在插件设置中全局配置编号位置、前缀、后缀和外部侧栏的最小宽度；默认位置为左侧内部，前缀为 `§`，后缀为空，外部位置的最小侧栏宽度为 48 px。

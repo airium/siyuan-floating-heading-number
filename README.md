@@ -8,16 +8,6 @@ Floating Heading Number adds accurate, configurable hierarchical numbering to he
 * **Flexible presentation.** Choose five placements and customize the prefix and suffix; by default, numbers appear as `§1` inside the left edge.
 * **Non-invasive.** The plugin leaves heading blocks, transactions, and undo data untouched while adapting to editor interactions.
 
-## Demonstration
-
-### Numbering logic (outside-left placement)
-
-<img width="600" alt="Hierarchical heading numbering demonstration" src="https://raw.githubusercontent.com/airium/siyuan-floating-heading-number/main/assets/numbering-logic.gif">
-
-### Automatic hiding in narrow views
-
-<img width="600" alt="Heading numbers automatically hiding in a narrow editor" src="https://raw.githubusercontent.com/airium/siyuan-floating-heading-number/main/assets/narrow-view-auto-hide.gif">
-
 ## Behavior
 
 Floating heading numbering is enabled by default. Placement, prefix, suffix, and the minimum outside-gutter width are configured globally in the plugin settings. The defaults are inside left, a `§` prefix, no suffix, and a 48 px minimum gutter width for outside placements.
