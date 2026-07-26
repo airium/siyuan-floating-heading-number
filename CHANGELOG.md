@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.2 - 2026-07-26
+
+* Keep heading numbers visible during block, range, and highlight selection without adding them to copied content.
+* Preserve SiYuan's native heading selection and drag overlays by rendering numbers on editable-child pseudo-elements.
+
 ## v0.3.1 - 2026-07-22
 
 * Use inside-left as the default heading-number placement.

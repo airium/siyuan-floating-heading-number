@@ -30,7 +30,7 @@ Floating heading numbering is enabled by default. Placement, prefix, suffix, and
 * Places numbers outside or inside either edge of the heading row, or immediately after heading text.
 * Adds configurable text before and after each number, defaulting to the section sign (`§`) prefix and no suffix.
 * Auto-hides outside placements when the corresponding gutter is narrower than the configured minimum width.
-* Keeps folded-heading controls available, hides outside numbers during heading hover or gutter activity, and hides all numbers during selection, highlight, range, and drag interactions.
+* Keeps folded-heading and selection overlays available, keeps numbers visible during selection without adding them to copied content, hides outside numbers during heading hover or gutter activity, and hides numbers while dragging blocks.
 * Does not modify heading block attributes, classes, styles, transactions, or undo data.
 
 ## Compatibility

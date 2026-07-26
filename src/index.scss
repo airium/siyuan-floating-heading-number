@@ -11,6 +11,7 @@
   opacity: var(--siyuan-floating-heading-number-opacity, 1);
   pointer-events: none;
   text-overflow: clip;
+  user-select: none;
   white-space: nowrap;
 }
 
@@ -21,12 +22,6 @@
 }
 
 [data-siyuan-floating-heading-number-plugin] {
-  .protyle-wysiwyg--hiderange [data-node-id][data-type="NodeHeading"],
-  .protyle-wysiwyg--selecting [data-node-id][data-type="NodeHeading"],
-  .protyle-wysiwyg [data-node-id][data-type="NodeHeading"].protyle-wysiwyg--select,
-  .protyle-wysiwyg [data-node-id][data-type="NodeHeading"].protyle-wysiwyg--hl,
-  .protyle-wysiwyg [data-node-id][data-type="NodeHeading"][select-start],
-  .protyle-wysiwyg [data-node-id][data-type="NodeHeading"][select-end],
   .protyle-wysiwyg [data-node-id][data-type="NodeHeading"][class*="dragover"] {
     --siyuan-floating-heading-number-opacity: 0;
   }
@@ -37,21 +32,29 @@
     --siyuan-floating-heading-number-opacity: 0;
   }
 
+  &:not([data-siyuan-floating-heading-number-placement="after-text"])
+    .protyle-wysiwyg
+    [data-node-id][data-type="NodeHeading"]
+    > [contenteditable]:first-child {
+    position: relative;
+  }
+
   &[data-siyuan-floating-heading-number-placement="outside-left"] {
-    .protyle-wysiwyg [data-node-id][data-type="NodeHeading"]:not([class*="dragover"])::after {
+    .protyle-wysiwyg [data-node-id][data-type="NodeHeading"] > [contenteditable]:first-child::before {
       @include floating-heading-number-absolute;
       right: calc(100% + var(--siyuan-floating-heading-number-gap, 8px));
       text-align: right;
     }
 
-    .protyle-wysiwyg [data-node-id][data-type="NodeHeading"][fold="1"]:not([class*="dragover"])::after {
+    .protyle-wysiwyg [data-node-id][data-type="NodeHeading"][fold="1"] > [contenteditable]:first-child::before {
       right: calc(100% + 16px + 6px);
     }
   }
 
   &[data-siyuan-floating-heading-number-placement="outside-right"]
     .protyle-wysiwyg
-    [data-node-id][data-type="NodeHeading"]:not([class*="dragover"])::after {
+    [data-node-id][data-type="NodeHeading"]
+    > [contenteditable]:first-child::before {
     @include floating-heading-number-absolute;
     left: calc(100% + var(--siyuan-floating-heading-number-gap, 8px));
     text-align: left;
@@ -59,7 +62,8 @@
 
   &[data-siyuan-floating-heading-number-placement="inside-left"]
     .protyle-wysiwyg
-    [data-node-id][data-type="NodeHeading"]:not([class*="dragover"])::after {
+    [data-node-id][data-type="NodeHeading"]
+    > [contenteditable]:first-child::before {
     @include floating-heading-number-absolute;
     left: 0;
     text-align: right;
@@ -67,7 +71,8 @@
 
   &[data-siyuan-floating-heading-number-placement="inside-right"]
     .protyle-wysiwyg
-    [data-node-id][data-type="NodeHeading"]:not([class*="dragover"])::after {
+    [data-node-id][data-type="NodeHeading"]
+    > [contenteditable]:first-child::before {
     @include floating-heading-number-absolute;
     right: 0;
     text-align: left;
