@@ -1,6 +1,6 @@
 {
-  "enabledTitle": "Floating heading numbers",
-  "enabledDescription": "Display exact full-document heading numbers beside headings.",
+  "enabledTitle": "Enable floating heading numbers",
+  "enabledDescription": "Display accurate heading numbers calculated from the full document.",
   "placementTitle": "Number placement",
   "placementDescription": "Choose where heading numbers are displayed.",
   "placementOutsideLeft": "Outside left",
@@ -9,10 +9,10 @@
   "placementInsideRight": "Inside right",
   "placementAfterText": "After heading text",
   "prefixTitle": "Number prefix",
-  "prefixDescription": "Text displayed immediately before each heading number. Spaces are preserved.",
+  "prefixDescription": "Fixed text shown before each heading number. Spaces are preserved.",
   "suffixTitle": "Number suffix",
-  "suffixDescription": "Text displayed immediately after each heading number. Spaces are preserved.",
-  "minimumGutterWidthTitle": "Minimum gutter width",
-  "minimumGutterWidthDescription": "Hide outside placements when the corresponding gutter is narrower than this value in pixels.",
+  "suffixDescription": "Fixed text shown after each heading number. Spaces are preserved.",
+  "minimumGutterWidthTitle": "Minimum gutter width (px)",
+  "minimumGutterWidthDescription": "Outside placements require at least this much gutter space. If the corresponding gutter is narrower, there is not enough room to display the numbers.",
   "loadError": "Unable to calculate floating heading numbers"
 }

@@ -1,5 +1,5 @@
 {
-  "enabledTitle": "浮动标题编号",
+  "enabledTitle": "启用浮动标题编号",
   "enabledDescription": "在标题旁显示基于完整文档计算的精确标题编号。",
   "placementTitle": "编号位置",
   "placementDescription": "选择标题编号的显示位置。",
@@ -9,10 +9,10 @@
   "placementInsideRight": "右侧内部",
   "placementAfterText": "标题文本之后",
   "prefixTitle": "编号前缀",
-  "prefixDescription": "紧接在每个标题编号之前显示的文本，保留空格。",
+  "prefixDescription": "在每个标题编号之前显示的固定文本。空格会被保留。",
   "suffixTitle": "编号后缀",
-  "suffixDescription": "紧接在每个标题编号之后显示的文本，保留空格。",
-  "minimumGutterWidthTitle": "最小侧栏宽度",
-  "minimumGutterWidthDescription": "当对应侧栏窄于此像素值时，隐藏位于标题外部的编号。",
+  "suffixDescription": "在每个标题编号之后显示的固定文本。空格会被保留。",
+  "minimumGutterWidthTitle": "最小侧边留白宽度（px）",
+  "minimumGutterWidthDescription": "如果使用左右外部位置，至少需要此宽度的侧边留白，否则空间将不足以显示编号。",
   "loadError": "无法计算浮动标题编号"
 }

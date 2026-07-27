@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.3 - 2026-07-27
+
+* Clarify the full-document numbering, non-invasive copy behavior, and display-space settings in English and Simplified Chinese.
+* Update the Marketplace preview with a current in-app screenshot and remove outdated demonstration assets.
+
 ## v0.3.2 - 2026-07-26
 
 * Keep heading numbers visible during block, range, and highlight selection without adding them to copied content.

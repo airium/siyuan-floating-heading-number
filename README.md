@@ -4,13 +4,13 @@
 
 Floating Heading Number adds accurate, configurable hierarchical numbering to headings in SiYuan's desktop editor.
 
-* **Exact across the whole document.** Numbering stays correct even when a long document is only partially rendered.
-* **Flexible presentation.** Choose five placements and customize the prefix and suffix; by default, numbers appear as `§1` inside the left edge.
-* **Non-invasive.** The plugin leaves heading blocks, transactions, and undo data untouched while adapting to editor interactions.
+* **Accurate numbering**: Numbering is computed from the whole document, so it remains accurate even when a long document is only partially rendered.
+* **Flexible presentation**: Choose from five placements and customize the prefix and suffix; the display automatically adapts to editor interactions.
+* **Non-invasive**: The plugin does not modify heading blocks, transactions, or undo data, and does not add numbers to copied content.
 
 ## Behavior
 
-Floating heading numbering is enabled by default. Placement, prefix, suffix, and the minimum outside-gutter width are configured globally in the plugin settings. The defaults are inside left, a `§` prefix, no suffix, and a 48 px minimum gutter width for outside placements.
+Floating heading numbering is enabled by default. Placement, prefix, suffix, and the minimum gutter width for outside placements are configured globally in the plugin settings. The defaults are inside left, a `§` prefix, no suffix, and a 48 px minimum gutter width for outside placements.
 
 * Numbers are computed from the complete BlockDOM returned by the kernel, so they stay exact when a long document is only partially mounted in the editor.
 * Uses the highest heading level present in the document as the numbering root.
@@ -19,8 +19,8 @@ Floating heading numbering is enabled by default. Placement, prefix, suffix, and
 * Shares one full-document snapshot across split editors and refreshes it after heading-affecting transactions.
 * Places numbers outside or inside either edge of the heading row, or immediately after heading text.
 * Adds configurable text before and after each number, defaulting to the section sign (`§`) prefix and no suffix.
-* Auto-hides outside placements when the corresponding gutter is narrower than the configured minimum width.
-* Keeps folded-heading and selection overlays available, keeps numbers visible during selection without adding them to copied content, hides outside numbers during heading hover or gutter activity, and hides numbers while dragging blocks.
+* Auto-hides numbers in outside placements when the corresponding gutter is narrower than the configured minimum width.
+* Keeps folded-heading and selection overlays available, keeps numbers visible during selection without adding them to copied content, hides outside numbers while a heading is hovered or its block handle is active, and hides numbers while dragging blocks.
 * Does not modify heading block attributes, classes, styles, transactions, or undo data.
 
 ## Compatibility
