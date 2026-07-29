@@ -13,6 +13,6 @@
   "suffixTitle": "编号后缀",
   "suffixDescription": "在每个标题编号之后显示的固定文本。空格会被保留。",
   "minimumGutterWidthTitle": "最小侧边留白宽度（px）",
-  "minimumGutterWidthDescription": "如果使用左右外部位置，至少需要此宽度的侧边留白，否则空间将不足以显示编号。",
+  "minimumGutterWidthDescription": "左右外部位置至少需要此宽度的侧边留白；如果对应一侧的留白更窄，编号会改为显示在同侧内部。",
   "loadError": "无法计算浮动标题编号"
 }

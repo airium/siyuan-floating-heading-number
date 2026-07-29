@@ -5,7 +5,10 @@ import {
     it,
 } from "vitest";
 import {EditorController} from "../src/controller";
-import {escapeCssString} from "../src/renderer";
+import {
+    escapeCssString,
+    resolveEffectivePlacement,
+} from "../src/renderer";
 import {DEFAULT_RENDER_PREFERENCES} from "../src/settings";
 import type {HeadingNumberPlacement} from "../src/types";
 import {
@@ -68,16 +71,18 @@ describe("EditorController rendering", () => {
 
     it.each(
         [
-            ["outside-left", 47, 100, 48, false],
-            ["outside-left", 48, 0, 48, true],
-            ["outside-right", 100, 47, 48, false],
-            ["outside-right", 0, 48, 48, true],
-            ["outside-left", 71, 100, 72, false],
-            ["outside-right", 100, 72, 72, true],
+            ["outside-left", 47, 100, 48, "inside-left", "padding-left"],
+            ["outside-left", 48, 0, 48, "outside-left", undefined],
+            ["outside-right", 100, 47, 48, "inside-right", "padding-right"],
+            ["outside-right", 0, 48, 48, "outside-right", undefined],
+            ["outside-left", 71, 100, 72, "inside-left", "padding-left"],
+            ["outside-right", 100, 72, 72, "outside-right", undefined],
+            ["outside-left", 0, 100, 0, "outside-left", undefined],
+            ["outside-right", 100, 0, 0, "outside-right", undefined],
         ] as const,
     )(
-        "%s checks only its corresponding %spx/%spx gutter against %spx",
-        (placement, paddingLeft, paddingRight, minimumGutterWidth, visible) => {
+        "%s resolves its %spx/%spx gutters against %spx to %s",
+        (placement, paddingLeft, paddingRight, minimumGutterWidth, effectivePlacement, paddingProperty) => {
             const {protyle, host} = createProtyle({paddingLeft, paddingRight});
             const controller = new EditorController(protyle, true, {
                 ...DEFAULT_RENDER_PREFERENCES,
@@ -87,8 +92,34 @@ describe("EditorController rendering", () => {
             controller.switchRoot("root");
             controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
 
-            expect(host.dataset.siyuanFloatingHeadingNumberPlugin !== undefined).toBe(visible);
+            const css = host.querySelector("style")?.textContent ?? "";
+            expect(host.dataset.siyuanFloatingHeadingNumberPlugin).toBeDefined();
+            expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe(effectivePlacement);
+            if (paddingProperty) {
+                expect(css).toContain(`${paddingProperty}:calc(`);
+            } else {
+                expect(css).not.toContain("padding-left:calc(");
+                expect(css).not.toContain("padding-right:calc(");
+            }
             controller.destroy();
+        },
+    );
+
+    it.each(
+        [
+            ["outside-left", "", "64px", 48, "inside-left"],
+            ["outside-left", "-1px", "64px", 0, "inside-left"],
+            ["outside-right", "64px", "auto", 48, "inside-right"],
+            ["outside-right", "64px", "NaN", 0, "inside-right"],
+            ["inside-left", "", "", 512, "inside-left"],
+            ["after-text", "auto", "auto", 512, "after-text"],
+        ] as const,
+    )(
+        "%s resolves invalid gutters %s/%s at %spx to %s",
+        (placement, paddingLeft, paddingRight, minimumGutterWidth, effectivePlacement) => {
+            expect(resolveEffectivePlacement(placement, minimumGutterWidth, {paddingLeft, paddingRight})).toBe(
+                effectivePlacement,
+            );
         },
     );
 
@@ -109,15 +140,17 @@ describe("EditorController rendering", () => {
         },
     );
 
-    it("recalculates outside visibility after a padding transition", async () => {
+    it("switches between outside and inside placement after padding transitions without replacing its snapshot", async () => {
         const {protyle, host, wysiwyg} = createProtyle({paddingLeft: 47});
         const controller = new EditorController(protyle, true, {
             ...DEFAULT_RENDER_PREFERENCES,
             placement: "outside-left",
         });
         controller.switchRoot("root");
-        controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
-        expect(host.dataset.siyuanFloatingHeadingNumberPlugin).toBeUndefined();
+        const currentSnapshot = snapshot("root", {"heading-1": "1"});
+        controller.applySnapshot(currentSnapshot);
+        expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("inside-left");
+        expect(host.querySelector("style")?.textContent).toContain("padding-left:calc(");
 
         wysiwyg.style.paddingLeft = "48px";
         const transition = new Event("transitionend") as TransitionEvent;
@@ -125,20 +158,35 @@ describe("EditorController rendering", () => {
         wysiwyg.dispatchEvent(transition);
         await new Promise((resolve) => setTimeout(resolve, 20));
 
-        expect(host.dataset.siyuanFloatingHeadingNumberPlugin).toBeDefined();
+        expect(controller.currentSnapshot).toBe(currentSnapshot);
+        expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("outside-left");
+        expect(host.querySelector("style")?.textContent).not.toContain("padding-left:calc(");
+
+        wysiwyg.style.paddingLeft = "47px";
+        wysiwyg.dispatchEvent(transition);
+        await new Promise((resolve) => setTimeout(resolve, 20));
+
+        expect(controller.currentSnapshot).toBe(currentSnapshot);
+        expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("inside-left");
+        expect(host.querySelector("style")?.textContent).toContain("padding-left:calc(");
         controller.destroy();
     });
 
-    it("suppresses narrow, history, and backlink Protyles", () => {
-        for (
-            const [options, renderPreferences] of [
-                [{paddingLeft: 47}, {...DEFAULT_RENDER_PREFERENCES, placement: "outside-left" as const}],
-                [{history: true}, DEFAULT_RENDER_PREFERENCES],
-                [{backlink: true}, DEFAULT_RENDER_PREFERENCES],
-            ] as const
-        ) {
+    it("suppresses history and backlink Protyles while retaining narrow editors", () => {
+        const narrow = createProtyle({paddingLeft: 47});
+        const narrowController = new EditorController(narrow.protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "outside-left",
+        });
+        narrowController.switchRoot("root");
+        narrowController.applySnapshot(snapshot("root", {"heading-1": "1"}));
+        expect(narrow.host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("inside-left");
+        narrowController.destroy();
+        narrow.host.remove();
+
+        for (const options of [{history: true}, {backlink: true}]) {
             const {protyle, host} = createProtyle(options);
-            const controller = new EditorController(protyle, true, renderPreferences);
+            const controller = new EditorController(protyle);
             controller.switchRoot("root");
             controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
 
@@ -194,6 +242,25 @@ describe("EditorController rendering", () => {
         expect(css).toMatch(/--siyuan-floating-heading-number-font-size:1px/);
     });
 
+    it("uses inside sizing and padding for a folded outside-left heading after fallback", () => {
+        const {protyle, host} = createProtyle({
+            headings: heading("folded", 1, "Folded", 'fold="1"'),
+            paddingLeft: 47,
+        });
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "outside-left",
+        });
+        controller.switchRoot("root");
+        controller.applySnapshot(snapshot("root", {folded: "123.456.789.123.456.789"}));
+
+        const css = host.querySelector("style")?.textContent ?? "";
+        expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("inside-left");
+        expect(css).toContain("--siyuan-floating-heading-number-width:96px");
+        expect(css).toContain("padding-left:calc(96px + 8px)");
+        controller.destroy();
+    });
+
     it("measures outside-right from the heading edge to the right gutter", () => {
         const {protyle, host, wysiwyg} = createProtyle({headings: heading("right", 1)});
         Object.defineProperty(wysiwyg, "getBoundingClientRect", {
@@ -228,6 +295,41 @@ describe("EditorController rendering", () => {
             controller.destroy();
         },
     );
+
+    it("keeps a fallback-inside number visible when its gutter is active", async () => {
+        const {protyle, host, gutter} = createProtyle({paddingRight: 47});
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "outside-right",
+        });
+        controller.switchRoot("root");
+        controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
+
+        gutter.classList.remove("fn__none");
+        gutter.innerHTML = '<button data-node-id="heading-1" data-type="NodeHeading"></button>';
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("inside-right");
+        expect(host.querySelector("style")?.textContent).not.toContain(
+            "--siyuan-floating-heading-number-opacity:0",
+        );
+        controller.destroy();
+    });
+
+    it("renders without a gutter controller", () => {
+        const {protyle, host} = createProtyle({paddingLeft: 47});
+        delete protyle.gutter;
+        const controller = new EditorController(protyle, true, {
+            ...DEFAULT_RENDER_PREFERENCES,
+            placement: "outside-left",
+        });
+        controller.switchRoot("root");
+        controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
+
+        expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe("inside-left");
+        expect(host.querySelector("style")?.textContent).toContain("padding-left:calc(");
+        controller.destroy();
+    });
 
     it("measures prefix and suffix as part of the capped label", () => {
         const {protyle, host} = createProtyle({headings: heading("affixed", 1)});

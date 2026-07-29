@@ -46,10 +46,14 @@ describe("heading number placement styles", () => {
         expect(css).toContain("user-select: none");
     });
 
-    it("keeps non-gutter numbers visible while hovering headings", () => {
+    it("restricts outside hover suppression to fine-pointer hover devices", () => {
+        const mediaQuery = "@media (hover: hover) and (pointer: fine)";
+        const mediaQueryIndex = css.indexOf(mediaQuery);
         const hoverRule = css.match(/[^{}]*:hover\s*\{[^{}]*--siyuan-floating-heading-number-opacity:\s*0;?[^{}]*\}/)
             ?.[0];
 
+        expect(mediaQueryIndex).toBeGreaterThanOrEqual(0);
+        expect(css.slice(0, mediaQueryIndex)).not.toContain("NodeHeading]:hover");
         expect(hoverRule).toBeDefined();
         expect(hoverRule).toContain(
             ":not([data-siyuan-floating-heading-number-placement=inside-left])",

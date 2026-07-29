@@ -13,6 +13,6 @@
   "suffixTitle": "Number suffix",
   "suffixDescription": "Fixed text shown after each heading number. Spaces are preserved.",
   "minimumGutterWidthTitle": "Minimum gutter width (px)",
-  "minimumGutterWidthDescription": "Outside placements require at least this much gutter space. If the corresponding gutter is narrower, there is not enough room to display the numbers.",
+  "minimumGutterWidthDescription": "Outside placements require at least this much gutter space. If the corresponding gutter is narrower, numbers are shown at the matching inside position instead.",
   "loadError": "Unable to calculate floating heading numbers"
 }

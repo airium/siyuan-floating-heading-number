@@ -26,10 +26,12 @@
     --siyuan-floating-heading-number-opacity: 0;
   }
 
-  &:not([data-siyuan-floating-heading-number-placement="inside-left"]):not([data-siyuan-floating-heading-number-placement="inside-right"]):not([data-siyuan-floating-heading-number-placement="after-text"])
-    .protyle-wysiwyg
-    [data-node-id][data-type="NodeHeading"]:hover {
-    --siyuan-floating-heading-number-opacity: 0;
+  @media (hover: hover) and (pointer: fine) {
+    &:not([data-siyuan-floating-heading-number-placement="inside-left"]):not([data-siyuan-floating-heading-number-placement="inside-right"]):not([data-siyuan-floating-heading-number-placement="after-text"])
+      .protyle-wysiwyg
+      [data-node-id][data-type="NodeHeading"]:hover {
+      --siyuan-floating-heading-number-opacity: 0;
+    }
   }
 
   &:not([data-siyuan-floating-heading-number-placement="after-text"])

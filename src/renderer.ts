@@ -43,17 +43,21 @@ export function renderHeadingNumbers(options: RenderOptions): void {
     const {controllerId, enabled, gutterHeadingId, protyle, renderPreferences, snapshot, styleElement} = options;
     const host = protyle.element;
     const wysiwyg = protyle.wysiwyg.element;
-    const computedStyle = window.getComputedStyle(wysiwyg);
     if (
-        !enabled || !snapshot || snapshot.rootId !== protyle.block.rootID || !isProtyleSupported(protyle) ||
-        !hasRequiredGutter(computedStyle, renderPreferences)
+        !enabled || !snapshot || snapshot.rootId !== protyle.block.rootID || !isProtyleSupported(protyle)
     ) {
         clearHeadingNumberRendering(host, styleElement);
         return;
     }
+    const computedStyle = window.getComputedStyle(wysiwyg);
+    const effectivePlacement = resolveEffectivePlacement(
+        renderPreferences.placement,
+        renderPreferences.minimumGutterWidth,
+        computedStyle,
+    );
 
     host.dataset.siyuanFloatingHeadingNumberPlugin = controllerId;
-    host.dataset.siyuanFloatingHeadingNumberPlacement = renderPreferences.placement;
+    host.dataset.siyuanFloatingHeadingNumberPlacement = effectivePlacement;
     if (gutterHeadingId) {
         host.dataset.siyuanFloatingHeadingNumberGutterId = gutterHeadingId;
     } else {
@@ -84,7 +88,7 @@ export function renderHeadingNumbers(options: RenderOptions): void {
             label,
             baseFontSize,
             fontFamily,
-            renderPreferences.placement,
+            effectivePlacement,
         );
         const selector = `${hostSelector} .protyle-wysiwyg ` +
             `[data-node-id="${escapeCssString(id)}"][data-type="NodeHeading"]`;
@@ -94,8 +98,8 @@ export function renderHeadingNumbers(options: RenderOptions): void {
                 `--siyuan-floating-heading-number-gap:${HEADING_NUMBER_GAP}px;` +
                 `--siyuan-floating-heading-number-width:${sizing.width}px;}`,
         );
-        if (renderPreferences.placement === "inside-left" || renderPreferences.placement === "inside-right") {
-            const paddingProperty = renderPreferences.placement === "inside-left" ? "padding-left" : "padding-right";
+        if (effectivePlacement === "inside-left" || effectivePlacement === "inside-right") {
+            const paddingProperty = effectivePlacement === "inside-left" ? "padding-left" : "padding-right";
             rules.push(
                 `${selector}>[contenteditable]:first-child{${paddingProperty}:` +
                     `calc(${sizing.width}px + ${HEADING_NUMBER_GAP}px);}`,
@@ -104,8 +108,7 @@ export function renderHeadingNumbers(options: RenderOptions): void {
         renderedHeadingIds.add(id);
     });
 
-    const gutterMayOverlapNumber = renderPreferences.placement === "outside-left" ||
-        renderPreferences.placement === "outside-right";
+    const gutterMayOverlapNumber = effectivePlacement === "outside-left" || effectivePlacement === "outside-right";
     if (gutterMayOverlapNumber && gutterHeadingId && renderedHeadingIds.has(gutterHeadingId)) {
         rules.push(
             `${hostSelector}[data-siyuan-floating-heading-number-gutter-id="${escapeCssString(gutterHeadingId)}"] ` +
@@ -124,18 +127,20 @@ export function escapeCssString(value: string): string {
         .replace(/\r\n|\r|\n|\f/g, (character) => `\\${character.codePointAt(0)?.toString(16)} `);
 }
 
-function hasRequiredGutter(
-    computedStyle: CSSStyleDeclaration,
-    renderPreferences: HeadingNumberRenderPreferences,
-): boolean {
-    if (renderPreferences.placement !== "outside-left" && renderPreferences.placement !== "outside-right") {
-        return true;
+export function resolveEffectivePlacement(
+    requestedPlacement: HeadingNumberPlacement,
+    minimumGutterWidth: number,
+    computedStyle: Pick<CSSStyleDeclaration, "paddingLeft" | "paddingRight">,
+): HeadingNumberPlacement {
+    if (requestedPlacement !== "outside-left" && requestedPlacement !== "outside-right") {
+        return requestedPlacement;
     }
-    const paddingValue = renderPreferences.placement === "outside-left" ?
-        computedStyle.paddingLeft :
-        computedStyle.paddingRight;
+    const paddingValue = requestedPlacement === "outside-left" ? computedStyle.paddingLeft : computedStyle.paddingRight;
     const padding = Number.parseFloat(paddingValue);
-    return Number.isFinite(padding) && padding >= renderPreferences.minimumGutterWidth;
+    if (Number.isFinite(padding) && padding >= 0 && padding >= minimumGutterWidth) {
+        return requestedPlacement;
+    }
+    return requestedPlacement === "outside-left" ? "inside-left" : "inside-right";
 }
 
 function measureSizing(

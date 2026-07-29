@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0 - 2026-07-29
+
+* Support SiYuan's mobile and browser-mobile frontends.
+* Fall back to the matching inside position when an outside placement lacks sufficient gutter space.
+* Restrict outside hover suppression to hover-capable fine pointers so touch interaction cannot leave numbers hidden.
+
 ## v0.3.3 - 2026-07-27
 
 * Clarify the full-document numbering, non-invasive copy behavior, and display-space settings in English and Simplified Chinese.

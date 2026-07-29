@@ -36,5 +36,4 @@ declare module "siyuan" {
     }
 
     export function getAllEditor(): unknown[];
-    export function getFrontend(): string;
 }

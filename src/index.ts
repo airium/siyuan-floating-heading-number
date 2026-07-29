@@ -1,6 +1,5 @@
 import {
     getAllEditor,
-    getFrontend,
     Plugin,
     Setting,
 } from "siyuan";
@@ -14,6 +13,7 @@ import {
     DEFAULT_MINIMUM_GUTTER_WIDTH,
     DEFAULT_PLUGIN_SETTINGS,
     isHeadingNumberPlacement,
+    isOutsidePlacement,
     MINIMUM_GUTTER_WIDTH_MAX,
     MINIMUM_GUTTER_WIDTH_MIN,
     normalizeMinimumGutterWidth,
@@ -34,7 +34,6 @@ import "./index.scss";
 
 const SETTINGS_FILE = "settings.json";
 const REFRESH_DELAY = 300;
-const SUPPORTED_FRONTENDS = new Set(["desktop", "browser-desktop", "desktop-window"]);
 const PLACEMENT_LABEL_KEYS: Record<HeadingNumberPlacement, string> = {
     "outside-left": "placementOutsideLeft",
     "outside-right": "placementOutsideRight",
@@ -49,7 +48,6 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
     private readonly refreshTimers = new Map<string, number>();
     private readonly loggedFailures = new Set<string>();
     private settingsValue: PluginSettings = {...DEFAULT_PLUGIN_SETTINGS};
-    private runtimeSupported = false;
     private appearanceObserver?: MutationObserver;
     private enabledInput?: HTMLInputElement;
     private placementSelect?: HTMLSelectElement;
@@ -105,12 +103,8 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
     };
 
     async onload(): Promise<void> {
-        this.runtimeSupported = SUPPORTED_FRONTENDS.has(getFrontend());
         await this.loadSettings();
         this.configureSettings();
-        if (!this.runtimeSupported) {
-            return;
-        }
 
         this.eventBus.on("loaded-protyle-static", this.onStatic);
         this.eventBus.on("loaded-protyle-dynamic", this.onDynamic);
@@ -121,9 +115,6 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
     }
 
     onLayoutReady(): void {
-        if (!this.runtimeSupported) {
-            return;
-        }
         getAllEditor().forEach((candidate) => {
             const controller = this.attach(normalizeProtyle(candidate));
             if (controller) {
@@ -133,13 +124,11 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
     }
 
     onunload(): void {
-        if (this.runtimeSupported) {
-            this.eventBus.off("loaded-protyle-static", this.onStatic);
-            this.eventBus.off("loaded-protyle-dynamic", this.onDynamic);
-            this.eventBus.off("switch-protyle", this.onSwitch);
-            this.eventBus.off("destroy-protyle", this.onDestroy);
-            this.eventBus.off("ws-main", this.onWebSocket);
-        }
+        this.eventBus.off("loaded-protyle-static", this.onStatic);
+        this.eventBus.off("loaded-protyle-dynamic", this.onDynamic);
+        this.eventBus.off("switch-protyle", this.onSwitch);
+        this.eventBus.off("destroy-protyle", this.onDestroy);
+        this.eventBus.off("ws-main", this.onWebSocket);
         this.appearanceObserver?.disconnect();
         this.refreshTimers.forEach((timer) => window.clearTimeout(timer));
         this.refreshTimers.clear();
@@ -227,6 +216,7 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
                     select.append(option);
                 });
                 select.value = this.settingsValue.placement;
+                select.addEventListener("change", () => this.syncMinimumGutterWidthAvailability());
                 this.placementSelect = select;
                 return select;
             },
@@ -270,6 +260,7 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
                 input.step = "1";
                 input.value = String(this.settingsValue.minimumGutterWidth);
                 this.minimumGutterWidthInput = input;
+                this.syncMinimumGutterWidthAvailability();
                 return input;
             },
         });
@@ -311,6 +302,16 @@ export default class FloatingHeadingNumberPlugin extends Plugin {
         if (this.suffixInput) {
             this.suffixInput.value = this.settingsValue.suffix;
         }
+        this.syncMinimumGutterWidthAvailability();
+    }
+
+    private syncMinimumGutterWidthAvailability(): void {
+        if (!this.minimumGutterWidthInput) {
+            return;
+        }
+        const placementValue = this.placementSelect?.value;
+        const placement = isHeadingNumberPlacement(placementValue) ? placementValue : this.settingsValue.placement;
+        this.minimumGutterWidthInput.disabled = !isOutsidePlacement(placement);
     }
 
     private attach(protyle?: MinimalProtyle): EditorController | undefined {

@@ -2,7 +2,7 @@
 
 [简体中文](https://github.com/airium/siyuan-floating-heading-number/blob/main/README.zh-CN.md)
 
-Floating Heading Number adds accurate, configurable hierarchical numbering to headings in SiYuan's desktop editor.
+Floating Heading Number adds accurate, configurable hierarchical numbering to headings throughout SiYuan.
 
 * **Accurate numbering**: Numbering is computed from the whole document, so it remains accurate even when a long document is only partially rendered.
 * **Flexible presentation**: Choose from five placements and customize the prefix and suffix; the display automatically adapts to editor interactions.
@@ -19,13 +19,15 @@ Floating heading numbering is enabled by default. Placement, prefix, suffix, and
 * Shares one full-document snapshot across split editors and refreshes it after heading-affecting transactions.
 * Places numbers outside or inside either edge of the heading row, or immediately after heading text.
 * Adds configurable text before and after each number, defaulting to the section sign (`§`) prefix and no suffix.
-* Auto-hides numbers in outside placements when the corresponding gutter is narrower than the configured minimum width.
-* Keeps folded-heading and selection overlays available, keeps numbers visible during selection without adding them to copied content, hides outside numbers while a heading is hovered or its block handle is active, and hides numbers while dragging blocks.
+* Falls back from an outside placement to the matching inside position when that editor's corresponding gutter is narrower than the configured minimum width.
+* Keeps folded-heading and selection overlays available, keeps numbers visible during selection without adding them to copied content, hides outside numbers during mouse hover or while a block handle is active, and hides numbers while dragging blocks.
 * Does not modify heading block attributes, classes, styles, transactions, or undo data.
 
 ## Compatibility
 
-SiYuan 3.7.1 or later is required. The plugin supports `desktop`, `browser-desktop`, and `desktop-window`. It is disabled in publishing mode and does not run on mobile frontends.
+SiYuan 3.7.1 or later is required. The plugin supports `desktop`, `mobile`, `browser-desktop`, `browser-mobile`, and `desktop-window`. It is disabled in publishing mode.
+
+Outside placement is evaluated for each editor independently. Narrow mobile layouts and narrow splits therefore use the matching inside position automatically, while editors with enough gutter space retain the requested outside position.
 
 The implementation relies on the internal `/api/block/getBlockDOM` endpoint and SiYuan's Protyle DOM selectors. These are compatibility dependencies rather than new public APIs.
 
@@ -57,14 +59,14 @@ pnpm check
 
 `plugin.json` is the canonical version source. To prepare a stable release:
 
-1. From an up-to-date `main` branch, run `pnpm version:set 0.4.0` with the intended `MAJOR.MINOR.PATCH` version. This updates both `plugin.json` and `package.json`.
-2. Add a dated `## v0.4.0 - YYYY-MM-DD` section to `CHANGELOG.md`. Its contents become the GitHub release notes.
+1. From an up-to-date `main` branch, run `pnpm version:set X.Y.Z` with the intended `MAJOR.MINOR.PATCH` version. This updates both `plugin.json` and `package.json`.
+2. Add a dated `## vX.Y.Z - YYYY-MM-DD` section to `CHANGELOG.md`. Its contents become the GitHub release notes.
 3. Run `pnpm check`, review the resulting `package.zip`, then commit and push the manifest and changelog changes to `main`.
-4. On GitHub, open **Actions > Release > Run workflow**, select `main`, and enter `0.4.0` without a `v` prefix.
+4. On GitHub, open **Actions > Release > Run workflow**, select `main`, and enter `X.Y.Z` without a `v` prefix.
 
-The workflow accepts releases only from `main`, checks that the input matches both manifests, rejects an existing tag or release, installs from the frozen lockfile, runs the complete check/build/package verification, and requires matching changelog notes. It then creates tag and release `v0.4.0` at the dispatched commit and attaches exactly `package.zip`. Do not create the tag manually or replace an asset on an existing release; publish a new version for any correction.
+The workflow accepts releases only from `main`, checks that the input matches both manifests, rejects an existing tag or release, installs from the frozen lockfile, runs the complete check/build/package verification, and requires matching changelog notes. It then creates tag and release `vX.Y.Z` at the dispatched commit and attaches exactly `package.zip`. Do not create the tag manually or replace an asset on an existing release; publish a new version for any correction.
 
-For the first Marketplace publication, create the GitHub release before adding `airium/siyuan-floating-heading-number` to SiYuan Bazaar's `plugins.txt` in a pull request. After the repository is accepted, Bazaar discovers later GitHub releases automatically.
+SiYuan Bazaar discovers later GitHub releases automatically after the repository's initial Marketplace acceptance.
 
 ## License
 

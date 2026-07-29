@@ -41,6 +41,10 @@ if (
 if ("kernels" in plugin || plugin.disabledInPublish !== true || JSON.stringify(plugin.backends) !== '["all"]') {
     throw new Error("plugin.json contains an invalid backend or kernel declaration");
 }
+const expectedFrontends = ["desktop", "mobile", "browser-desktop", "browser-mobile", "desktop-window"];
+if (JSON.stringify(plugin.frontends) !== JSON.stringify(expectedFrontends)) {
+    throw new Error("plugin.json must declare every supported SiYuan frontend explicitly");
+}
 
 await assertPngDimensions(zip, "icon.png", 160, 160);
 await assertPngDimensions(zip, "preview.png", 1024, 768);
