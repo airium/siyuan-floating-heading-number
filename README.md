@@ -18,6 +18,7 @@ Floating heading numbering is enabled by default. Placement, prefix, suffix, and
 * Excludes headings nested anywhere inside lists, blockquotes, callouts, and query embeds.
 * Shares one full-document snapshot across split editors and refreshes it after heading-affecting transactions.
 * Places numbers outside or inside either edge of the heading row, or immediately after heading text.
+* Matches each heading's block-level color, font family, weight, and style; inside and after-text numbers also follow its font size.
 * Adds configurable text before and after each number, defaulting to the section sign (`§`) prefix and no suffix.
 * Falls back from an outside placement to the matching inside position when that editor's corresponding gutter is narrower than the configured minimum width.
 * Keeps folded-heading and selection overlays available, keeps numbers visible during selection without adding them to copied content, hides outside numbers during mouse hover or while a block handle is active, and hides numbers while dragging blocks.

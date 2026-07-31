@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.1 - 2026-07-31
+
+* Match heading numbers to each heading's block-level color, font family, weight, and style.
+* Use the heading's font size for inside and after-text placements while retaining automatic sizing outside.
+* Remeasure numbers after block-level style changes and custom font loading.
+
 ## v0.4.0 - 2026-07-29
 
 * Support SiYuan's mobile and browser-mobile frontends.

@@ -28,6 +28,16 @@ describe("heading number placement styles", () => {
         expect(css).toContain("right: calc(100% + 16px + 6px)");
     });
 
+    it("inherits block-level typography while retaining controlled line height", () => {
+        expect(css).toContain("color: inherit");
+        expect(css).toContain("font-family: inherit");
+        expect(css).toContain("font-style: inherit");
+        expect(css).toContain("font-weight: inherit");
+        expect(css).not.toContain("font-weight: 600");
+        expect(css).not.toContain("color: var(--b3-theme-on-surface-light)");
+        expect(css).toContain("line-height: 1.625");
+    });
+
     it("leaves heading-block pseudo-elements available to SiYuan", () => {
         expect(css).not.toMatch(/\[data-type=NodeHeading\]::(?:before|after)/);
         expect(css).not.toMatch(/\[data-type=NodeHeading\]\[[^\]]+\]::(?:before|after)/);

@@ -3,6 +3,7 @@ import {
     describe,
     expect,
     it,
+    vi,
 } from "vitest";
 import {EditorController} from "../src/controller";
 import {
@@ -19,6 +20,7 @@ import {
 
 describe("EditorController rendering", () => {
     afterEach(() => {
+        vi.restoreAllMocks();
         document.body.innerHTML = "";
     });
 
@@ -67,6 +69,138 @@ describe("EditorController rendering", () => {
             expect(css).not.toContain("padding-right:calc(");
         }
         controller.destroy();
+    });
+
+    it.each(
+        [
+            ["inside-left", 64, "inside-left", 28],
+            ["inside-right", 64, "inside-right", 28],
+            ["after-text", 64, "after-text", 28],
+            ["outside-left", 64, "outside-left", 16],
+            ["outside-right", 64, "outside-right", 16],
+            ["outside-left", 47, "inside-left", 28],
+            ["outside-right", 47, "inside-right", 28],
+        ] as const,
+    )(
+        "%s with a %spx gutter renders as %s at %spx",
+        (placement, correspondingPadding, effectivePlacement, expectedFontSize) => {
+            const {protyle, host, wysiwyg} = createProtyle({
+                paddingLeft: placement === "outside-left" ? correspondingPadding : 64,
+                paddingRight: placement === "outside-right" ? correspondingPadding : 64,
+            });
+            wysiwyg.style.fontSize = "16px";
+            const headingElement = wysiwyg.firstElementChild as HTMLElement;
+            headingElement.style.fontFamily = "HeadingFace";
+            headingElement.style.fontSize = "28px";
+            headingElement.style.fontStyle = "italic";
+            headingElement.style.fontWeight = "700";
+            const controller = new EditorController(protyle, true, {
+                ...DEFAULT_RENDER_PREFERENCES,
+                placement,
+            });
+            controller.switchRoot("root");
+            controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
+
+            expect(host.dataset.siyuanFloatingHeadingNumberPlacement).toBe(effectivePlacement);
+            expect(host.querySelector("style")?.textContent).toContain(
+                `--siyuan-floating-heading-number-font-size:${expectedFontSize}px`,
+            );
+            controller.destroy();
+        },
+    );
+
+    it("measures numbers with the heading's block-level font properties", () => {
+        const context = {
+            font: "",
+            measureText: vi.fn(() => ({width: 24})),
+        };
+        vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+            context as unknown as CanvasRenderingContext2D,
+        );
+        const {protyle, wysiwyg} = createProtyle();
+        const headingElement = wysiwyg.firstElementChild as HTMLElement;
+        headingElement.style.fontFamily = "HeadingFace";
+        headingElement.style.fontSize = "28px";
+        headingElement.style.fontStyle = "italic";
+        headingElement.style.fontWeight = "700";
+        const controller = new EditorController(protyle);
+        controller.switchRoot("root");
+        controller.applySnapshot(snapshot("root", {"heading-1": "1"}));
+
+        expect(context.font).toBe("italic 700 28px HeadingFace");
+        expect(context.measureText).toHaveBeenCalledWith("§1");
+        controller.destroy();
+    });
+
+    it("ignores nested inline formatting when resolving block-level typography", () => {
+        const {protyle, host, wysiwyg} = createProtyle({
+            headings: heading(
+                "inline",
+                1,
+                '<span data-type="text" style="font-family:InlineFace;font-size:40px;font-weight:900">Text</span>',
+            ),
+        });
+        const headingElement = wysiwyg.firstElementChild as HTMLElement;
+        headingElement.style.fontFamily = "BlockFace";
+        headingElement.style.fontSize = "24px";
+        headingElement.style.fontWeight = "600";
+        const controller = new EditorController(protyle);
+        controller.switchRoot("root");
+        controller.applySnapshot(snapshot("root", {inline: "1"}));
+
+        expect(host.querySelector("style")?.textContent).toContain(
+            "--siyuan-floating-heading-number-font-size:24px",
+        );
+        controller.destroy();
+    });
+
+    it("remeasures after a block-level style mutation", async () => {
+        const {protyle, host, wysiwyg} = createProtyle();
+        const headingElement = wysiwyg.firstElementChild as HTMLElement;
+        headingElement.style.fontSize = "20px";
+        const controller = new EditorController(protyle);
+        controller.switchRoot("root");
+        const currentSnapshot = snapshot("root", {"heading-1": "1"});
+        controller.applySnapshot(currentSnapshot);
+        expect(host.querySelector("style")?.textContent).toContain(
+            "--siyuan-floating-heading-number-font-size:20px",
+        );
+
+        headingElement.style.fontSize = "30px";
+        await new Promise((resolve) => setTimeout(resolve, 20));
+
+        expect(controller.currentSnapshot).toBe(currentSnapshot);
+        expect(host.querySelector("style")?.textContent).toContain(
+            "--siyuan-floating-heading-number-font-size:30px",
+        );
+        controller.destroy();
+    });
+
+    it("remeasures after fonts finish loading and removes the listener on destroy", () => {
+        const originalFonts = Object.getOwnPropertyDescriptor(document, "fonts");
+        const fontFaceSet = new EventTarget();
+        Object.defineProperty(document, "fonts", {configurable: true, value: fontFaceSet});
+        let controller: EditorController | undefined;
+        try {
+            const {protyle} = createProtyle();
+            controller = new EditorController(protyle);
+            const requestRender = vi.spyOn(controller, "requestRender");
+
+            fontFaceSet.dispatchEvent(new Event("loadingdone"));
+            expect(requestRender).toHaveBeenCalledOnce();
+
+            controller.destroy();
+            requestRender.mockClear();
+            fontFaceSet.dispatchEvent(new Event("loadingdone"));
+            expect(requestRender).not.toHaveBeenCalled();
+        } finally {
+            controller?.destroy();
+            if (originalFonts) {
+                Object.defineProperty(document, "fonts", originalFonts);
+            } else {
+                Reflect.deleteProperty(document, "fonts");
+            }
+        }
     });
 
     it.each(

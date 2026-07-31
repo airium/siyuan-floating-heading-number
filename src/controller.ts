@@ -29,6 +29,7 @@ export class EditorController {
     private gutterObserver?: MutationObserver;
     private gutterElement?: HTMLElement;
     private gutterHeadingId?: string;
+    private fontFaceSet?: FontFaceSet;
     private animationFrame?: number;
     private readonly styleElement: HTMLStyleElement;
     private readonly transitionEndListener = (event: TransitionEvent): void => {
@@ -36,6 +37,7 @@ export class EditorController {
             this.requestRender();
         }
     };
+    private readonly fontLoadingDoneListener = (): void => this.requestRender();
 
     constructor(
         protyle: MinimalProtyle,
@@ -187,6 +189,7 @@ export class EditorController {
         this.resizeObserver?.disconnect();
         this.contentObserver?.disconnect();
         this.gutterObserver?.disconnect();
+        this.fontFaceSet?.removeEventListener("loadingdone", this.fontLoadingDoneListener);
         this.protyle.wysiwyg.element.removeEventListener("transitionend", this.transitionEndListener);
         const view = this.host.ownerDocument.defaultView;
         if (this.animationFrame !== undefined) {
@@ -211,6 +214,7 @@ export class EditorController {
             if (
                 mutations.some((mutation) =>
                     mutation.type === "childList" || mutation.attributeName === "fold" ||
+                    mutation.attributeName === "style" ||
                     mutation.target === this.protyle.wysiwyg.element
                 )
             ) {
@@ -224,7 +228,18 @@ export class EditorController {
             subtree: true,
         });
         this.protyle.wysiwyg.element.addEventListener("transitionend", this.transitionEndListener);
+        this.bindFontObserver();
         this.bindGutterObserver();
+    }
+
+    private bindFontObserver(): void {
+        const nextFontFaceSet = this.host.ownerDocument.fonts as FontFaceSet | undefined;
+        if (this.fontFaceSet === nextFontFaceSet) {
+            return;
+        }
+        this.fontFaceSet?.removeEventListener("loadingdone", this.fontLoadingDoneListener);
+        this.fontFaceSet = nextFontFaceSet;
+        this.fontFaceSet?.addEventListener("loadingdone", this.fontLoadingDoneListener);
     }
 
     private bindGutterObserver(): void {

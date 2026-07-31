@@ -14,7 +14,14 @@ export const HEADING_NUMBER_FOLDED_MARKER_WIDTH = 16;
 const HEADING_SELECTOR = '[data-node-id][data-type="NodeHeading"][data-subtype]';
 const MIN_WIDTH = 8;
 const MIN_FONT_SIZE = 1;
-let measureCanvas: HTMLCanvasElement | undefined;
+const measureCanvases = new WeakMap<Document, HTMLCanvasElement>();
+
+interface HeadingTypography {
+    fontFamily: string;
+    fontSize: number;
+    fontStyle: string;
+    fontWeight: string;
+}
 
 export interface RenderOptions {
     controllerId: string;
@@ -49,7 +56,8 @@ export function renderHeadingNumbers(options: RenderOptions): void {
         clearHeadingNumberRendering(host, styleElement);
         return;
     }
-    const computedStyle = window.getComputedStyle(wysiwyg);
+    const view = wysiwyg.ownerDocument.defaultView ?? window;
+    const computedStyle = view.getComputedStyle(wysiwyg);
     const effectivePlacement = resolveEffectivePlacement(
         renderPreferences.placement,
         renderPreferences.minimumGutterWidth,
@@ -68,8 +76,12 @@ export function renderHeadingNumbers(options: RenderOptions): void {
     const rules: string[] = [];
     const renderedHeadingIds = new Set<string>();
     const wysiwygRect = wysiwyg.getBoundingClientRect();
-    const baseFontSize = Number.parseFloat(computedStyle.fontSize) || 16;
-    const fontFamily = computedStyle.fontFamily || "sans-serif";
+    const editorTypography: HeadingTypography = {
+        fontFamily: computedStyle.fontFamily || "sans-serif",
+        fontSize: parseFontSize(computedStyle.fontSize, 16),
+        fontStyle: computedStyle.fontStyle || "normal",
+        fontWeight: computedStyle.fontWeight || "400",
+    };
 
     wysiwyg.querySelectorAll<HTMLElement>(HEADING_SELECTOR).forEach((heading) => {
         if (heading.closest(EXCLUDED_HEADING_CONTAINER_SELECTOR)) {
@@ -80,14 +92,27 @@ export function renderHeadingNumbers(options: RenderOptions): void {
         if (!id || !number) {
             return;
         }
+        const editable = heading.firstElementChild;
+        if (!editable?.hasAttribute("contenteditable")) {
+            return;
+        }
         const label = `${renderPreferences.prefix}${number}${renderPreferences.suffix}`;
+        const headingStyle = view.getComputedStyle(editable);
+        const headingTypography: HeadingTypography = {
+            fontFamily: headingStyle.fontFamily || editorTypography.fontFamily,
+            fontSize: parseFontSize(headingStyle.fontSize, editorTypography.fontSize),
+            fontStyle: headingStyle.fontStyle || editorTypography.fontStyle,
+            fontWeight: headingStyle.fontWeight || editorTypography.fontWeight,
+        };
+        const typography = effectivePlacement === "outside-left" || effectivePlacement === "outside-right" ?
+            {...headingTypography, fontSize: editorTypography.fontSize} :
+            headingTypography;
 
         const sizing = measureSizing(
             wysiwygRect,
             heading,
             label,
-            baseFontSize,
-            fontFamily,
+            typography,
             effectivePlacement,
         );
         const selector = `${hostSelector} .protyle-wysiwyg ` +
@@ -147,8 +172,7 @@ function measureSizing(
     wysiwygRect: DOMRect,
     heading: HTMLElement,
     number: string,
-    baseFontSize: number,
-    fontFamily: string,
+    typography: HeadingTypography,
     placement: HeadingNumberPlacement,
 ): {fontSize: number; width: number;} {
     const headingRect = heading.getBoundingClientRect();
@@ -177,26 +201,36 @@ function measureSizing(
         );
     }
 
-    const textWidth = measureText(number, baseFontSize, fontFamily);
+    const textWidth = measureText(number, typography, heading.ownerDocument);
     const fontSize = textWidth > availableWidth ?
-        Math.max(MIN_FONT_SIZE, Math.floor(baseFontSize * availableWidth / textWidth * 100) / 100) :
-        baseFontSize;
+        Math.max(MIN_FONT_SIZE, Math.floor(typography.fontSize * availableWidth / textWidth * 100) / 100) :
+        typography.fontSize;
     const width = textWidth > availableWidth ?
         availableWidth :
         Math.min(availableWidth, Math.max(minimumWidth, Math.ceil(textWidth)));
     return {fontSize, width};
 }
 
-function measureText(number: string, fontSize: number, fontFamily: string): number {
+function measureText(number: string, typography: HeadingTypography, ownerDocument: Document): number {
     try {
-        measureCanvas ??= document.createElement("canvas");
+        let measureCanvas = measureCanvases.get(ownerDocument);
+        if (!measureCanvas) {
+            measureCanvas = ownerDocument.createElement("canvas");
+            measureCanvases.set(ownerDocument, measureCanvas);
+        }
         const context = measureCanvas.getContext("2d");
         if (context) {
-            context.font = `600 ${fontSize}px ${fontFamily}`;
+            context.font = `${typography.fontStyle} ${typography.fontWeight} ` +
+                `${typography.fontSize}px ${typography.fontFamily}`;
             return context.measureText(number).width;
         }
     } catch {
         // The proportional fallback is used in DOM implementations without a canvas context.
     }
-    return number.length * fontSize * 0.6;
+    return number.length * typography.fontSize * 0.6;
+}
+
+function parseFontSize(value: string, fallback: number): number {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
