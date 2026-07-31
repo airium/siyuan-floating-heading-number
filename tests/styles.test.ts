@@ -8,6 +8,17 @@ import {HEADING_NUMBER_PLACEMENTS} from "../src/types";
 
 const css = compile("src/index.scss", {style: "expanded"}).css;
 
+const ruleFor = (selectorFragment: string) => {
+    const selectorIndex = css.indexOf(selectorFragment);
+    const openingBraceIndex = css.indexOf("{", selectorIndex);
+    const closingBraceIndex = css.indexOf("}", openingBraceIndex);
+
+    expect(selectorIndex).toBeGreaterThanOrEqual(0);
+    expect(openingBraceIndex).toBeGreaterThan(selectorIndex);
+    expect(closingBraceIndex).toBeGreaterThan(openingBraceIndex);
+    return css.slice(openingBraceIndex + 1, closingBraceIndex);
+};
+
 describe("heading number placement styles", () => {
     it("contains a presentation branch for every placement", () => {
         HEADING_NUMBER_PLACEMENTS.forEach((placement) => {
@@ -28,14 +39,34 @@ describe("heading number placement styles", () => {
         expect(css).toContain("right: calc(100% + 16px + 6px)");
     });
 
-    it("inherits block-level typography while retaining controlled line height", () => {
+    it("inherits block-level typography", () => {
         expect(css).toContain("color: inherit");
         expect(css).toContain("font-family: inherit");
         expect(css).toContain("font-style: inherit");
         expect(css).toContain("font-weight: inherit");
         expect(css).not.toContain("font-weight: 600");
         expect(css).not.toContain("color: var(--b3-theme-on-surface-light)");
-        expect(css).toContain("line-height: 1.625");
+    });
+
+    it("keeps fixed geometry on absolute placements without expanding after-text lines", () => {
+        const outsideLeftRule = ruleFor(
+            "[data-siyuan-floating-heading-number-placement=outside-left] .protyle-wysiwyg",
+        );
+        const afterTextRule = ruleFor(
+            "[data-siyuan-floating-heading-number-placement=after-text] .protyle-wysiwyg",
+        );
+
+        expect(outsideLeftRule).toContain("height: 1.625em");
+        expect(outsideLeftRule).toContain("overflow: hidden");
+        expect(outsideLeftRule).toContain("line-height: 1.625");
+
+        expect(afterTextRule).toContain("display: inline-block");
+        expect(afterTextRule).toContain("height: auto");
+        expect(afterTextRule).toContain("overflow: visible");
+        expect(afterTextRule).toContain("line-height: inherit");
+        expect(afterTextRule).toContain("vertical-align: baseline");
+        expect(afterTextRule).not.toContain("height: 1.625em");
+        expect(afterTextRule).not.toContain("overflow: hidden");
     });
 
     it("leaves heading-block pseudo-elements available to SiYuan", () => {

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.2 - 2026-07-31
+
+* Align after-text numbers with the heading baseline without increasing heading block height.
+
 ## v0.4.1 - 2026-07-31
 
 * Match heading numbers to each heading's block-level color, font family, weight, and style.

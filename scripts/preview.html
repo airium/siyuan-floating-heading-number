@@ -265,14 +265,14 @@
         [data-siyuan-floating-heading-number-placement="after-text"] [data-type="NodeHeading"] > [contenteditable]::after {
             display: inline-block;
             width: var(--siyuan-floating-heading-number-width, 0);
-            height: 1.625em;
+            height: auto;
             margin-inline-start: 8px;
-            overflow: hidden;
+            overflow: visible;
             color: #74807b;
             content: var(--siyuan-floating-heading-number-content, "");
             font-size: var(--siyuan-floating-heading-number-font-size, 16px);
             font-weight: 600;
-            line-height: 1.625;
+            line-height: inherit;
             opacity: var(--siyuan-floating-heading-number-opacity, 1);
             pointer-events: none;
             text-align: left;
